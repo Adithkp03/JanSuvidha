@@ -219,7 +219,10 @@ await app.register(async function (instance) {
 
 // Service catalog routing (Phase 2)
 app.get("/services", async (req, reply) => {
-  const res = await fetch(`${REQUEST_SERVICE_URL}/services`);
+  const url = new URL(`${REQUEST_SERVICE_URL}/services`);
+  if (req.query.department) url.searchParams.append("department", req.query.department);
+
+  const res = await fetch(url.toString());
   const text = await res.text();
   reply.code(res.status);
   reply.header("content-type", res.headers.get("content-type") || "application/json");

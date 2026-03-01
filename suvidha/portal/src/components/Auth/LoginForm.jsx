@@ -12,6 +12,7 @@ export default function LoginForm() {
     const setAuth = useStore(state => state.setAuth);
     const setRole = useStore(state => state.setRole);
 
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [step, setStep] = useState(1);
@@ -54,7 +55,7 @@ export default function LoginForm() {
         setError('');
 
         if (demoMode && otp === '123456') {
-            setAuth('demo-jwt-token-123', { id: 'demo', email, role: roleSelected });
+            setAuth('demo-jwt-token-123', { id: 'demo', email, name, role: roleSelected });
             setRole(roleSelected);
             navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
             return;
@@ -63,7 +64,10 @@ export default function LoginForm() {
         setLoading(true);
         try {
             const resp = await api.post('/auth/verify', { email, otp });
-            setAuth(resp.data.token, resp.data.user || { email, role: roleSelected });
+            const userData = resp.data.user || { email, role: roleSelected };
+            if (name) userData.name = name;
+
+            setAuth(resp.data.token, userData);
             setRole(roleSelected);
             navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
         } catch (err) {
@@ -142,16 +146,27 @@ export default function LoginForm() {
                                 </label>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-sm font-bold text-slate-700">{t('EnterEmail')}</label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
-                                    placeholder="yourid@example.com"
-                                    autoFocus
-                                />
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="block text-sm font-bold text-slate-700">Full Name</label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={e => setName(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
+                                        placeholder="Priya Sharma"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="block text-sm font-bold text-slate-700">{t('EnterEmail')}</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={e => setEmail(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
+                                        placeholder="yourid@example.com"
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-3 pt-2">
