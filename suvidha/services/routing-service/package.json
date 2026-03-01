@@ -1,0 +1,22 @@
+{
+  "__comment": "Routing service package manifest (RabbitMQ consumer stub for Phase 0).",
+  "name": "routing-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "lint": "node -e \"console.log('lint placeholder: ok')\"",
+    "test": "node -e \"console.log('test placeholder: ok')\""
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "fastify": "^4.28.1",
+    "prom-client": "^15.1.2"
+  }
+}
+

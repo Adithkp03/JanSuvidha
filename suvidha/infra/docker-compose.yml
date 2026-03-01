@@ -1,0 +1,303 @@
+# This docker-compose file defines the full JanSuvidha Phase 0 infrastructure and application services for local dev.
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: suvidha-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./migrations:/docker-entrypoint-initdb.d/migrations:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: suvidha-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: suvidha-minio
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    # Console is exposed on 9000 for judge verification; S3 API is on 9002.
+    command: server /data --address ":9002" --console-address ":9000"
+    ports:
+      - "9000:9000"
+      - "9002:9002"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "(curl -fsS http://127.0.0.1:9002/minio/health/live >/dev/null 2>&1 || wget -q -O - http://127.0.0.1:9002/minio/health/live >/dev/null 2>&1) || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: suvidha-rabbitmq
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  api-gateway:
+    build:
+      context: ../services/api-gateway
+      dockerfile: Dockerfile
+    container_name: suvidha-api-gateway
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - REQUEST_SERVICE_URL=http://request-service:3002
+      - PAYMENT_SERVICE_URL=http://payment-service:3003
+      - INTENT_SERVICE_URL=http://intent-service:8000
+      - DOC_SERVICE_URL=http://doc-service:3004
+    volumes:
+      - ../openapi.yml:/usr/src/app/openapi.yml:ro
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ../services/auth-service
+      dockerfile: Dockerfile
+    container_name: suvidha-auth-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3001
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://127.0.0.1:3001/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  request-service:
+    build:
+      context: ../services/request-service
+      dockerfile: Dockerfile
+    container_name: suvidha-request-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3002
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://127.0.0.1:3002/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  routing-service:
+    build:
+      context: ../services/routing-service
+      dockerfile: Dockerfile
+    container_name: suvidha-routing-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "node /usr/src/app/healthcheck.js" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  payment-service:
+    build:
+      context: ../services/payment-service
+      dockerfile: Dockerfile
+    container_name: suvidha-payment-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3003
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://127.0.0.1:3003/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  doc-service:
+    build:
+      context: ../services/doc-service
+      dockerfile: Dockerfile
+    container_name: suvidha-doc-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3004
+      - MINIO_ENDPOINT=http://minio:9002
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://127.0.0.1:3004/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  intent-service:
+    build:
+      context: ../services/intent-service
+      dockerfile: Dockerfile
+    container_name: suvidha-intent-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=8000
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health').getcode()==200 else 1)" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  kiosk-frontend:
+    build:
+      context: ../kiosk-frontend
+      dockerfile: Dockerfile
+    container_name: suvidha-kiosk-frontend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  admin-dashboard:
+    build:
+      context: ../admin-dashboard
+      dockerfile: Dockerfile
+    container_name: suvidha-admin-dashboard
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: suvidha-nginx
+    restart: unless-stopped
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      kiosk-frontend:
+        condition: service_healthy
+      admin-dashboard:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O - http://127.0.0.1/health >/dev/null 2>&1 || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: suvidha-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    profiles: [ "observability" ]
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: suvidha-grafana
+    restart: unless-stopped
+    profiles: [ "observability" ]
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  postgres_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+
+

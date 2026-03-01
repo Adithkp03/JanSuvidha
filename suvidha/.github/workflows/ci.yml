@@ -1,0 +1,69 @@
+# This GitHub Actions workflow runs basic lint/smoke checks and builds Docker images for PRs.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Node installs (services + frontends)
+        run: |
+          set -e
+          for d in services/api-gateway services/auth-service services/request-service services/routing-service services/payment-service services/doc-service kiosk-frontend admin-dashboard; do
+            echo "Installing $d"
+            (cd "$d" && npm install)
+          done
+
+      - name: Node lint placeholders
+        run: |
+          set -e
+          for d in services/api-gateway services/auth-service services/request-service services/routing-service services/payment-service services/doc-service kiosk-frontend admin-dashboard; do
+            echo "Lint $d"
+            (cd "$d" && npm run lint)
+          done
+
+      - name: Python smoke (intent-service)
+        run: |
+          set -e
+          cd services/intent-service
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m compileall .
+
+      - name: Frontend build smoke
+        run: |
+          set -e
+          (cd kiosk-frontend && npm run build)
+          (cd admin-dashboard && npm run build)
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env for compose build
+        run: |
+          cp infra/.env.example infra/.env
+
+      - name: Docker build (compose)
+        run: |
+          docker compose --env-file infra/.env -f infra/docker-compose.yml build
+

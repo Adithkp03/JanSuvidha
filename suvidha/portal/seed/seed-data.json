@@ -1,0 +1,119 @@
+{
+    "departments": [
+        {
+            "id": "dept_gas",
+            "name": "Gas Connection Services",
+            "code": "GAS",
+            "icon": "🔥",
+            "description": "Manage new and existing gas connections"
+        },
+        {
+            "id": "dept_elec",
+            "name": "Electricity Board",
+            "code": "ELEC",
+            "icon": "⚡",
+            "description": "Apply for power connections & grievance"
+        },
+        {
+            "id": "dept_mc",
+            "name": "Municipal Corporation",
+            "code": "MC",
+            "icon": "🏛️",
+            "description": "Certificates and Property services"
+        },
+        {
+            "id": "dept_water",
+            "name": "Water & Sewage",
+            "code": "WATER",
+            "icon": "💧",
+            "description": "Water connection mapping & faults"
+        },
+        {
+            "id": "dept_trans",
+            "name": "Transport Department",
+            "code": "TRANS",
+            "icon": "🚌",
+            "description": "Licensing & vehicle permits"
+        },
+        {
+            "id": "dept_rev",
+            "name": "Revenue Department",
+            "code": "REV",
+            "icon": "📜",
+            "description": "Land records and income certificates"
+        }
+    ],
+    "services": [
+        {
+            "id": "svc_gas_new",
+            "department_id": "dept_gas",
+            "name": "New Gas Connection",
+            "code": "GAS_101",
+            "description": "Apply for a household pipeline gas connection.",
+            "fee_amount": 1500,
+            "processing_days": 14,
+            "required_documents": [
+                "address_proof",
+                "identity_proof"
+            ],
+            "form_schema": [
+                {
+                    "name": "applicant_name",
+                    "label": "Full Name",
+                    "type": "text",
+                    "required": true
+                },
+                {
+                    "name": "address",
+                    "label": "Installation Address",
+                    "type": "textarea",
+                    "required": true
+                }
+            ]
+        },
+        {
+            "id": "svc_mc_birth",
+            "department_id": "dept_mc",
+            "name": "Birth Certificate",
+            "code": "MC_BIRTH",
+            "description": "Register a birth and obtain the official certificate.",
+            "fee_amount": 50,
+            "processing_days": 5,
+            "required_documents": [
+                "hospital_discharge_summary",
+                "parent_id"
+            ],
+            "form_schema": [
+                {
+                    "name": "child_name",
+                    "label": "Child's Name",
+                    "type": "text",
+                    "required": true
+                },
+                {
+                    "name": "gender",
+                    "label": "Gender",
+                    "type": "select",
+                    "options": [
+                        "Male",
+                        "Female",
+                        "Other"
+                    ],
+                    "required": true
+                },
+                {
+                    "name": "dob",
+                    "label": "Date of Birth",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "hospital_name",
+                    "label": "Hospital Name",
+                    "type": "text",
+                    "required": true
+                }
+            ]
+        }
+    ]
+}

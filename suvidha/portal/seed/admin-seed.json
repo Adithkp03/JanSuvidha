@@ -1,0 +1,194 @@
+{
+    "metrics": {
+        "total_24h": 142,
+        "pending": 38,
+        "overdue": 3,
+        "departmentDistribution": [
+            {
+                "name": "Power",
+                "count": 65
+            },
+            {
+                "name": "Water",
+                "count": 42
+            },
+            {
+                "name": "Civil",
+                "count": 25
+            },
+            {
+                "name": "Revenue",
+                "count": 10
+            }
+        ],
+        "statusOverTime": [
+            {
+                "date": "Mon",
+                "approved": 12,
+                "pending": 5,
+                "rejected": 2
+            },
+            {
+                "date": "Tue",
+                "approved": 25,
+                "pending": 15,
+                "rejected": 4
+            },
+            {
+                "date": "Wed",
+                "approved": 32,
+                "pending": 10,
+                "rejected": 1
+            },
+            {
+                "date": "Thu",
+                "approved": 40,
+                "pending": 20,
+                "rejected": 8
+            },
+            {
+                "date": "Fri",
+                "approved": 38,
+                "pending": 38,
+                "rejected": 5
+            }
+        ],
+        "slaBreachTrend": [
+            {
+                "date": "Week 1",
+                "breaches": 12
+            },
+            {
+                "date": "Week 2",
+                "breaches": 8
+            },
+            {
+                "date": "Week 3",
+                "breaches": 15
+            },
+            {
+                "date": "Week 4",
+                "breaches": 3
+            }
+        ],
+        "fraudIncidents": [
+            {
+                "date": "Mon",
+                "incidents": 0
+            },
+            {
+                "date": "Tue",
+                "incidents": 2
+            },
+            {
+                "date": "Wed",
+                "incidents": 1
+            },
+            {
+                "date": "Thu",
+                "incidents": 4
+            },
+            {
+                "date": "Fri",
+                "incidents": 0
+            }
+        ]
+    },
+    "historicalContext": {
+        "flagged_hashes": [
+            "abcd1234docHash",
+            "deadbeef9876hash"
+        ],
+        "velocity_counts": {
+            "9876543210": 12,
+            "5550192345": 6
+        }
+    },
+    "requests": [
+        {
+            "id": "REQ-2026-89A0",
+            "department": "power",
+            "service_name": "New Meter Connection",
+            "applicant_name": "Rahul Verma",
+            "phone": "9876543210",
+            "status": "pending",
+            "created_at": "2026-03-01T10:00:00Z",
+            "intent_confidence": 0.2,
+            "urgency_flag": false,
+            "documents": [
+                {
+                    "doc_type": "Identity Proof",
+                    "url": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
+                    "file_type": "application/pdf",
+                    "hash": "abcd1234docHash",
+                    "ocr_text": "NAME: RAHUL VERMA\nDOB: 12-05-1990\nID: PAN123456",
+                    "validation_status": "MISMATCH"
+                }
+            ]
+        },
+        {
+            "id": "REQ-2026-89B1",
+            "department": "water",
+            "service_name": "Water Tank Repair",
+            "applicant_name": "Priya Sharma",
+            "phone": "8888888888",
+            "status": "in_review",
+            "created_at": "2026-02-28T14:30:00Z",
+            "intent_confidence": 0.95,
+            "urgency_flag": true,
+            "payload": {
+                "address": "Plot 42, Sector 15",
+                "issue": "Main pipe burst"
+            }
+        },
+        {
+            "id": "REQ-2026-89C2",
+            "department": "civil",
+            "service_name": "Birth Certificate Issuance",
+            "applicant_name": "Ananya Singh",
+            "phone": "7777777777",
+            "status": "pending",
+            "created_at": "2026-02-20T09:15:00Z",
+            "intent_confidence": 0.88,
+            "documents": [
+                {
+                    "doc_type": "Hospital Record",
+                    "url": "https://fastly.picsum.photos/id/119/3264/2176.jpg?hmac=J0A10vXUUB1D-Bikp12lntHqP917eNnQnSF4_f85iQ0",
+                    "file_type": "image/jpeg",
+                    "ocr_text": "City Hospital\nDOB: 15-02-2026\nParents: Kunal & Ananya Singh",
+                    "validation_status": "MATCH"
+                }
+            ]
+        },
+        {
+            "id": "REQ-2026-89D3",
+            "department": "revenue",
+            "service_name": "Property Tax Payment",
+            "applicant_name": "Vikram Patel",
+            "phone": "5550192345",
+            "status": "doc_required",
+            "created_at": "2026-03-01T11:45:00Z",
+            "intent_confidence": 0.99
+        },
+        {
+            "id": "REQ-2026-89E4",
+            "department": "power",
+            "service_name": "Load Extension",
+            "applicant_name": "Kavitha Reddy",
+            "phone": "6666666666",
+            "status": "approved",
+            "created_at": "2026-02-25T16:20:00Z",
+            "intent_confidence": 0.90
+        },
+        {
+            "id": "REQ-2026-89F5",
+            "department": "water",
+            "service_name": "New Connection",
+            "applicant_name": "Suresh Kumar",
+            "phone": "9999999999",
+            "status": "rejected",
+            "created_at": "2026-02-27T10:05:00Z",
+            "intent_confidence": 0.45
+        }
+    ]
+}

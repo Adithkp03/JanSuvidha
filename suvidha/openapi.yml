@@ -1,0 +1,615 @@
+# This OpenAPI spec describes the JanSuvidha Phase 1 core civic kiosk API.
+openapi: 3.0.3
+info:
+  title: JanSuvidha Civic Kiosk API
+  version: 1.0.0
+servers:
+  - url: /
+tags:
+  - name: auth
+    description: OTP and session management
+  - name: services
+    description: Service catalog and metadata
+  - name: requests
+    description: Citizen requests lifecycle
+  - name: documents
+    description: Request document uploads
+  - name: sync
+    description: Offline kiosk sync
+  - name: payments
+    description: Payment initiation
+  - name: admin
+    description: Admin and back-office operations
+  - name: intent
+    description: ML intent prediction
+  - name: meta
+    description: Health and metadata
+
+paths:
+  /health:
+    get:
+      tags: [meta]
+      summary: Health check for the API gateway
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /auth/otp:
+    post:
+      tags: [auth]
+      summary: Request OTP for an email address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthOtpRequest"
+            examples:
+              sample:
+                value:
+                  email: "citizen@example.com"
+      responses:
+        "200":
+          description: OTP issued (for demo environments, otp_hint is returned)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOtpResponse"
+
+  /auth/verify:
+    post:
+      tags: [auth]
+      summary: Verify OTP and issue a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthVerifyRequest"
+            examples:
+              sample:
+                value:
+                  email: "citizen@example.com"
+                  otp: "123456"
+      responses:
+        "200":
+          description: OTP verified, token issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthVerifyResponse"
+
+  /services:
+    get:
+      tags: [services]
+      summary: List departments and services available via kiosk
+      responses:
+        "200":
+          description: Services list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ServiceSummary"
+
+  /requests:
+    post:
+      tags: [requests]
+      summary: Create a new civic service request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequestRequest"
+            examples:
+              sample:
+                value:
+                  kiosk_id: "8c5cd8c4-9a7a-4c24-ae0a-1d7f8a0cb001"
+                  user_id: null
+                  department: "water"
+                  service_type: "leak"
+                  priority: "normal"
+                  payload:
+                    name: "Rahul"
+                    address: "Ward 1, Street 2"
+      responses:
+        "201":
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestResponse"
+    get:
+      tags: [requests]
+      summary: List requests with filters
+      parameters:
+        - in: query
+          name: department
+          schema:
+            type: string
+          description: Filter by department
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: Filter by status
+      responses:
+        "200":
+          description: Filtered request list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RequestSummary"
+
+  /requests/{id}:
+    get:
+      tags: [requests]
+      summary: Get a single request with related documents and payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Request details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestWithRelations"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /requests/{id}/documents:
+    post:
+      tags: [documents]
+      summary: Attach a document to a request (metadata only for Phase 1)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDocumentRequest"
+            examples:
+              sample:
+                value:
+                  filename: "aadhar.pdf"
+                  mime_type: "application/pdf"
+                  size: 123456
+      responses:
+        "201":
+          description: Document metadata stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentResponse"
+
+  /sync/offline:
+    post:
+      tags: [sync]
+      summary: Accept an offline kiosk event and materialize a request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfflineSyncRequest"
+            examples:
+              sample:
+                value:
+                  client_event_id: "evt-123"
+                  kiosk_id: "8c5cd8c4-9a7a-4c24-ae0a-1d7f8a0cb001"
+                  signature: "base64..."
+                  payload:
+                    department: "water"
+                    service_type: "leak"
+                    priority: "normal"
+                    payload:
+                      name: "Rahul"
+                      address: "Ward 1"
+      responses:
+        "201":
+          description: Offline event processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfflineSyncResponse"
+
+  /payments:
+    post:
+      tags: [payments]
+      summary: Initiate a payment for a request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+            examples:
+              sample:
+                value:
+                  request_id: "f9d4c612-bfa2-4cc0-9a9c-0cb058bd0001"
+                  amount: 50
+                  gateway: "sandbox"
+      responses:
+        "201":
+          description: Payment record created (gateway integration in later phase)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+
+  /admin/requests:
+    get:
+      tags: [admin]
+      summary: List requests for admins
+      parameters:
+        - in: query
+          name: department
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Admin-flavoured list of requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RequestSummary"
+
+  /admin/requests/{id}:
+    patch:
+      tags: [admin]
+      summary: Update status/priority of a request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUpdateRequest"
+      responses:
+        "200":
+          description: Request updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestResponse"
+
+  /intent/predict:
+    post:
+      tags: [intent]
+      summary: Predict user intent for a free-text query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntentPredictRequest"
+      responses:
+        "200":
+          description: Predicted intent and suggested fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntentPredictResponse"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          nullable: true
+    HealthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        service:
+          type: string
+          example: api-gateway
+
+    AuthOtpRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    AuthOtpResponse:
+      type: object
+      properties:
+        sent:
+          type: boolean
+        otp_hint:
+          type: string
+          description: Demo-only field; not returned in production.
+
+    AuthVerifyRequest:
+      type: object
+      required: [email, otp]
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+
+    AuthVerifyResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            role:
+              type: string
+
+    ServiceSummary:
+      type: object
+      properties:
+        department:
+          type: string
+          example: water
+        service_type:
+          type: string
+          example: leak
+        label:
+          type: string
+          example: "Water leak complaint"
+
+    CreateRequestRequest:
+      type: object
+      required: [department, service_type, payload]
+      properties:
+        kiosk_id:
+          type: string
+          format: uuid
+          nullable: true
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+        department:
+          type: string
+          example: water
+        service_type:
+          type: string
+          example: leak
+        priority:
+          type: string
+          default: normal
+        payload:
+          type: object
+          additionalProperties: true
+
+    RequestResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        kiosk_id:
+          type: string
+          format: uuid
+          nullable: true
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+        department:
+          type: string
+        service_type:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+        payload:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RequestSummary:
+      allOf:
+        - $ref: "#/components/schemas/RequestResponse"
+
+    DocumentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        storage_path:
+          type: string
+        mime_type:
+          type: string
+        size:
+          type: integer
+        uploaded_at:
+          type: string
+          format: date-time
+
+    CreateDocumentRequest:
+      type: object
+      required: [filename]
+      properties:
+        filename:
+          type: string
+        storage_path:
+          type: string
+          description: Logical path (Phase 1 placeholder)
+        mime_type:
+          type: string
+        size:
+          type: integer
+
+    RequestWithRelations:
+      type: object
+      properties:
+        request:
+          $ref: "#/components/schemas/RequestResponse"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentResponse"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentResponse"
+
+    OfflineSyncRequest:
+      type: object
+      required: [client_event_id, kiosk_id, payload]
+      properties:
+        client_event_id:
+          type: string
+        kiosk_id:
+          type: string
+          format: uuid
+        payload:
+          type: object
+        signature:
+          type: string
+          nullable: true
+
+    OfflineSyncResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        duplicate:
+          type: boolean
+          description: True if this client_event_id was already processed.
+
+    CreatePaymentRequest:
+      type: object
+      required: [request_id, amount]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        currency:
+          type: string
+          default: INR
+        gateway:
+          type: string
+          example: sandbox
+
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        currency:
+          type: string
+        gateway:
+          type: string
+        gateway_ref:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    AdminUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+        priority:
+          type: string
+
+    IntentPredictRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+
+    IntentPredictResponse:
+      type: object
+      properties:
+        intent:
+          type: string
+          example: complaint_water
+        confidence:
+          type: number
+          example: 0.82
+        suggested_fields:
+          type: object
+          example:
+            department: water
+            service_type: leak
+

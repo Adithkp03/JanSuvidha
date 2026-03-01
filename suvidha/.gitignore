@@ -1,0 +1,11 @@
+# This .gitignore keeps local secrets and build artifacts out of version control.
+infra/.env
+
+**/node_modules/
+**/dist/
+
+**/.venv/
+**/__pycache__/
+
+*.log
+
