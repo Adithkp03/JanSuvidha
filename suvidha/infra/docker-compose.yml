@@ -226,23 +226,11 @@ services:
       timeout: 5s
       retries: 5
 
-  kiosk-frontend:
+  portal:
     build:
-      context: ../kiosk-frontend
+      context: ../portal
       dockerfile: Dockerfile
-    container_name: suvidha-kiosk-frontend
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1" ]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-
-  admin-dashboard:
-    build:
-      context: ../admin-dashboard
-      dockerfile: Dockerfile
-    container_name: suvidha-admin-dashboard
+    container_name: suvidha-portal
     restart: unless-stopped
     healthcheck:
       test: [ "CMD-SHELL", "wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1" ]
@@ -257,9 +245,7 @@ services:
     depends_on:
       api-gateway:
         condition: service_healthy
-      kiosk-frontend:
-        condition: service_healthy
-      admin-dashboard:
+      portal:
         condition: service_healthy
     ports:
       - "80:80"
