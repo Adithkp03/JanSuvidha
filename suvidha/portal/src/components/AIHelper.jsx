@@ -70,14 +70,14 @@ export default function AIHelper({ onIntentResolved }) {
                 {/* Header Copy */}
                 <div className="inline-flex items-center justify-center p-2 bg-white/10 backdrop-blur-md rounded-2xl mb-6 shadow-sm border border-white/20">
                     <SparklesIcon className="w-5 h-5 text-accent-300 mr-2" />
-                    <span className="text-sm font-bold text-white tracking-widest uppercase">AI-Powered Routing</span>
+                    <span className="text-sm font-bold text-white tracking-widest uppercase">{t('AIPoweredRouting')}</span>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-md">
-                    How can we help you?
+                    {t('HowCanWeHelpYou')}
                 </h1>
                 <p className="text-lg sm:text-xl text-primary-100 mb-10 max-w-2xl font-medium">
-                    Describe what you need in plain english, and our artificial intelligence will instantly route you to the correct application form.
+                    {t('AIDescription')}
                 </p>
 
                 {/* Massive Search Bar Container */}
@@ -94,7 +94,7 @@ export default function AIHelper({ onIntentResolved }) {
                         <input
                             type="text"
                             className="flex-1 w-full min-w-0 bg-transparent text-white placeholder-white/60 px-6 sm:px-2 py-4 sm:py-5 text-lg sm:text-xl font-medium focus:outline-none"
-                            placeholder="e.g., 'Pay my electricity bill' or 'I need a birth cert...'"
+                            placeholder={t('AISearchPlaceholder')}
                             value={text}
                             onChange={e => setText(e.target.value)}
                         />
@@ -116,7 +116,7 @@ export default function AIHelper({ onIntentResolved }) {
                             >
                                 {loading ? (
                                     <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
-                                ) : 'Search AI'}
+                                ) : t('SearchAI')}
                             </button>
                         </div>
                     </div>
@@ -132,8 +132,8 @@ export default function AIHelper({ onIntentResolved }) {
                 <div className="mt-8 flex flex-col items-center min-h-[40px]">
                     {hints.length === 0 ? (
                         <div className="flex flex-wrap justify-center gap-3">
-                            <span className="text-sm font-semibold text-white/60 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">Try saying:</span>
-                            {['"Pay property tax"', '"Apply for trade license"', '"Fix street light"'].map((phrase, i) => (
+                            <span className="text-sm font-semibold text-white/60 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">{t('TrySaying')}</span>
+                            {[t('PayPropertyTax'), t('ApplyTradeLicense'), t('FixStreetLight')].map((phrase, i) => (
                                 <button key={i} onClick={() => setText(phrase.replace(/"/g, ''))} className="text-sm font-medium text-white hover:text-accent-300 transition-colors py-1.5 focus:outline-none focus:underline underline-offset-4 decoration-white/30 hover:decoration-accent-300">
                                     {phrase}
                                 </button>
@@ -141,7 +141,7 @@ export default function AIHelper({ onIntentResolved }) {
                         </div>
                     ) : (
                         <div className="flex flex-wrap justify-center items-center gap-3 animate-in slide-in-from-bottom-4">
-                            <span className="text-sm font-bold bg-white text-primary-700 px-4 py-1.5 rounded-full shadow-md">Did you mean?</span>
+                            <span className="text-sm font-bold bg-white text-primary-700 px-4 py-1.5 rounded-full shadow-md">{t('DidYouMean')}</span>
                             {hints.map(h => (
                                 <button key={h} onClick={() => onIntentResolved({ service_type: h, department: 'mock' })} className="px-5 py-2 bg-white/10 hover:bg-white/30 border border-white/30 hover:border-white rounded-full text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5">
                                     {h.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}

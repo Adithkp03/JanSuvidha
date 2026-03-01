@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import useStore from '../../store/useStore';
 import { saveOfflineItem, getOfflineItem } from '../../utils/offlineSync';
@@ -9,6 +10,7 @@ import ServiceCard from '../../components/ServiceCard';
 import { ArrowLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 export default function StartFlow() {
+    const { t } = useTranslation();
     const [selectedDept, setSelectedDept] = useState(null);
     const [services, setServices] = useState([]);
     const [loadingServices, setLoadingServices] = useState(false);
@@ -83,8 +85,8 @@ export default function StartFlow() {
                         <div className="relative z-10">
                             <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-slate-200/60 pb-6 mb-8 gap-4">
                                 <div>
-                                    <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Browse Departments</h2>
-                                    <p className="text-slate-500 mt-2 text-lg">Select a civic department to view available services instantly.</p>
+                                    <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">{t('BrowseDepartments')}</h2>
+                                    <p className="text-slate-500 mt-2 text-lg">{t('BrowseDepartmentsDesc')}</p>
                                 </div>
                             </div>
                             <DepartmentGrid onSelect={setSelectedDept} />
@@ -98,29 +100,29 @@ export default function StartFlow() {
                                     title="Back to Departments"
                                 >
                                     <ArrowLeftIcon className="w-5 h-5" />
-                                    <span>All Departments</span>
+                                    <span>{t('AllDepartments')}</span>
                                 </button>
                                 <div>
                                     <div className="flex items-center gap-3">
-                                        <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">{selectedDept.name} Services</h2>
+                                        <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">{t(selectedDept.name)}</h2>
                                         <span className="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full border border-primary-100 shadow-sm whitespace-nowrap">
-                                            {services.length} Available
+                                            {services.length} {t('Available')}
                                         </span>
                                     </div>
-                                    <p className="text-slate-500 mt-1">Select a service category to begin your official application.</p>
+                                    <p className="text-slate-500 mt-1">{t('SelectCategory')}</p>
                                 </div>
                             </div>
 
                             {loadingServices ? (
                                 <div className="py-24 flex flex-col items-center justify-center">
                                     <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin shadow-lg"></div>
-                                    <p className="mt-6 text-slate-500 font-semibold animate-pulse">Fetching official services...</p>
+                                    <p className="mt-6 text-slate-500 font-semibold animate-pulse">{t('FetchingServices')}</p>
                                 </div>
                             ) : services.length === 0 ? (
                                 <div className="py-20 flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-3xl border border-slate-100 border-dashed backdrop-blur-sm">
                                     <SparklesIcon className="w-16 h-16 text-slate-300 mb-4" />
-                                    <h3 className="text-xl font-bold text-slate-700">No services found</h3>
-                                    <p className="text-slate-500 mt-2 max-w-md">There are currently no active services listed under this department. Please check back later.</p>
+                                    <h3 className="text-xl font-bold text-slate-700">{t('NoServicesFound')}</h3>
+                                    <p className="text-slate-500 mt-2 max-w-md">{t('NoActiveServices')}</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

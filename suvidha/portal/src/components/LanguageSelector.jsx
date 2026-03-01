@@ -1,39 +1,82 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '../store/useStore';
-import { GlobeAltIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+
+const LANGUAGES = [
+    { code: 'en', label: 'English' },
+    { code: 'hi', label: 'हिन्दी' },
+    { code: 'ml', label: 'മലയാളം' },
+    { code: 'mr', label: 'मराठी' },
+    { code: 'te', label: 'తెలుగు' }
+];
 
 export default function LanguageSelector() {
     const { i18n } = useTranslation();
     const lang = useStore(state => state.language);
     const setLang = useStore(state => state.setLanguage);
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-    // Sync i18n with store on mount (restore persisted language)
+    // Sync i18n with store on mount 
     useEffect(() => {
         if (lang && lang !== i18n.language) {
             i18n.changeLanguage(lang);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount to restore persisted lang
+    }, [lang, i18n]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleToggle = () => {
-        const next = (i18n.language || 'en') === 'en' ? 'hi' : 'en';
-        i18n.changeLanguage(next).then(() => {
-            setLang(next);
+    const currentLang = i18n.language || lang || 'en';
+    const activeLabel = LANGUAGES.find(l => l.code === currentLang)?.label || 'English';
+
+    const handleSelect = (code) => {
+        i18n.changeLanguage(code).then(() => {
+            setLang(code);
+            setIsOpen(false);
         });
     };
 
-    const currentLang = i18n.language || lang || 'en';
-
     return (
-        <button
-            type="button"
-            onClick={handleToggle}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors"
-            aria-label="Toggle Language"
-        >
-            <GlobeAltIcon className="w-4 h-4" />
-            <span>{currentLang === 'en' ? 'हिन्दी' : 'English'}</span>
-        </button>
+        <div className="relative inline-block text-left" ref={dropdownRef}>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-transparent hover:border-white/10"
+                aria-label="Select Language"
+            >
+                <GlobeAltIcon className="w-4 h-4" />
+                <span>{activeLabel}</span>
+                <ChevronDownIcon className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="py-1">
+                        {LANGUAGES.map((language) => (
+                            <button
+                                key={language.code}
+                                onClick={() => handleSelect(language.code)}
+                                className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors ${currentLang === language.code
+                                        ? 'bg-primary-50 text-primary-700'
+                                        : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                                    }`}
+                            >
+                                {language.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

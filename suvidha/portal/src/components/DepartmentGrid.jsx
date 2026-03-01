@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import useStore from '../store/useStore';
 import { saveOfflineItem, getOfflineItem } from '../utils/offlineSync';
 import { BoltIcon, FireIcon, BeakerIcon, BuildingOffice2Icon, HomeModernIcon, TruckIcon, ShieldExclamationIcon, BuildingLibraryIcon } from '@heroicons/react/24/solid';
 
 export default function DepartmentGrid({ onSelect }) {
+    const { t } = useTranslation();
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -91,16 +93,16 @@ export default function DepartmentGrid({ onSelect }) {
                             {/* Status Pill Indicator */}
                             {idx < 2 && (
                                 <div className="absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-white border-2 border-slate-100 rounded-full text-[10px] font-bold tracking-wider text-primary-600 shadow-sm whitespace-nowrap z-10">
-                                    POPULAR
+                                    {t('PopularTag')}
                                 </div>
                             )}
                         </div>
 
                         <h3 className="font-extrabold text-slate-800 text-center leading-tight sm:text-lg group-hover:text-primary-700 transition-colors line-clamp-2">
-                            {dept.name}
+                            {t(dept.name)}
                         </h3>
                         <p className="text-xs font-semibold text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
-                            Apply here &rarr;
+                            {t('ApplyHere')}
                         </p>
                     </button>
                 );

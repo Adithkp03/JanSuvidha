@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import { useTranslation } from 'react-i18next';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
-const buildValidationSchema = (schemaDef) => {
+const buildValidationSchema = (schemaDef, t) => {
     let shape = {};
     if (!schemaDef || !Array.isArray(schemaDef)) return yup.object().shape({});
 
@@ -32,7 +32,7 @@ const buildValidationSchema = (schemaDef) => {
             if (field.type === 'checkbox') {
                 validator = validator.oneOf([true], 'You must accept this to continue');
             } else {
-                validator = validator.required('This field is required');
+                validator = validator.required(t ? t('FieldRequired') : 'This field is required');
             }
         }
 
@@ -48,7 +48,7 @@ const buildValidationSchema = (schemaDef) => {
 export default function FormRenderer({ schema = [], onSubmit, onBack, defaultValues = {} }) {
     const { t } = useTranslation();
 
-    const validationSchema = buildValidationSchema(schema);
+    const validationSchema = buildValidationSchema(schema, t);
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(validationSchema),
         defaultValues
@@ -63,7 +63,7 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                     <textarea
                         {...register(field.name)}
                         className={`${baseClass} min-h-[140px] resize-y`}
-                        placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
+                        placeholder={field.placeholder ? t(field.placeholder) : t(`Enter ${field.label.toLowerCase()}`)}
                     />
                 );
             case 'select':
@@ -72,9 +72,9 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                         {...register(field.name)}
                         className={baseClass}
                     >
-                        <option value="" disabled>{t('Select an option')}...</option>
+                        <option value="" disabled>{t('SelectOption')}...</option>
                         {field.options?.map(opt => (
-                            <option key={opt.value || opt} value={opt.value || opt}>{opt.label || opt}</option>
+                            <option key={opt.value || opt} value={opt.value || opt}>{t(opt.label || opt)}</option>
                         ))}
                     </select>
                 );
@@ -91,10 +91,10 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                         </div>
                         <div className="flex flex-col">
                             <label htmlFor={field.name} className="text-base font-bold text-slate-800 cursor-pointer select-none">
-                                {field.label} {field.required && <span className="text-red-500 ml-1">*</span>}
+                                {t(field.label)} {field.required && <span className="text-red-500 ml-1">*</span>}
                             </label>
                             {field.description && (
-                                <p className="text-sm text-slate-500 mt-1 select-none">{field.description}</p>
+                                <p className="text-sm text-slate-500 mt-1 select-none">{t(field.description)}</p>
                             )}
                         </div>
                     </div>
@@ -105,7 +105,7 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                         type={field.type || 'text'}
                         {...register(field.name)}
                         className={baseClass}
-                        placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                        placeholder={field.placeholder ? t(field.placeholder) : t(`Enter ${field.label.toLowerCase()}`)}
                     />
                 );
         }
@@ -117,7 +117,7 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
             <div className="bg-primary-50/50 border border-primary-100/50 rounded-2xl p-4 flex items-start gap-4 mb-8">
                 <InformationCircleIcon className="w-6 h-6 text-primary-600 shrink-0 mt-0.5" />
                 <p className="text-sm font-medium text-primary-800">
-                    Please ensure all details match your official documents exactly. Fields marked with <span className="text-red-500 font-bold">*</span> are mandatory.
+                    {t('FormMandatoryDetails')}
                 </p>
             </div>
 
@@ -129,9 +129,9 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                             {field.type !== 'checkbox' && (
                                 <div className="flex justify-between items-baseline mb-1">
                                     <label className="block text-sm font-extrabold text-slate-800 uppercase tracking-wide">
-                                        {field.label} {field.required && <span className="text-red-500">*</span>}
+                                        {t(field.label)} {field.required && <span className="text-red-500">*</span>}
                                     </label>
-                                    {field.description && <span className="text-xs text-slate-400 font-medium">{field.description}</span>}
+                                    {field.description && <span className="text-xs text-slate-400 font-medium">{t(field.description)}</span>}
                                 </div>
                             )}
 
@@ -154,13 +154,13 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                     onClick={onBack}
                     className="w-full sm:w-auto mt-4 sm:mt-0 px-8 py-4 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all focus-ring"
                 >
-                    Cancel Application
+                    {t('CancelApplication')}
                 </button>
                 <button
                     type="submit"
                     className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white font-extrabold text-lg rounded-xl shadow-xl shadow-slate-200 hover:bg-primary-600 hover:shadow-primary-500/30 hover:-translate-y-1 transition-all duration-300 focus-ring flex items-center justify-center gap-2 group"
                 >
-                    Save & Continue
+                    {t('SaveAndContinue')}
                     <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </button>
             </div>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { ShieldCheckIcon, CurrencyRupeeIcon, CheckBadgeIcon, ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import api from '../../services/api';
 
 export default function PaymentPage() {
+    const { t } = useTranslation();
     const { id } = useParams();
     const navigate = useNavigate();
     const [requestData, setRequestData] = useState(null);
@@ -32,16 +34,16 @@ export default function PaymentPage() {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <div className="w-12 h-12 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
-            <p className="mt-4 text-slate-500 font-bold animate-pulse">Initializing Secure Checkout...</p>
+            <p className="mt-4 text-slate-500 font-bold animate-pulse">{t('CheckoutInit')}</p>
         </div>
     );
 
     if (!requestData) return (
         <div className="text-center py-20 min-h-[50vh] flex flex-col items-center justify-center">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Checkout Error</h2>
-            <p className="text-slate-500 mb-6">Invalid or expired payment request.</p>
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('CheckoutError')}</h2>
+            <p className="text-slate-500 mb-6">{t('InvalidPaymentReq')}</p>
             <button onClick={() => navigate('/citizen')} className="text-primary-600 font-bold flex items-center gap-2 hover:underline">
-                <ArrowLeftIcon className="w-4 h-4" /> Return Home
+                <ArrowLeftIcon className="w-4 h-4" /> {t('ReturnHome')}
             </button>
         </div>
     );
@@ -87,23 +89,23 @@ export default function PaymentPage() {
                             <span className="text-sm font-black tracking-widest uppercase">JanSuvidha Pay</span>
                         </div>
 
-                        <p className="text-slate-400 font-bold text-sm uppercase tracking-wider mb-2">Amount Due</p>
+                        <p className="text-slate-400 font-bold text-sm uppercase tracking-wider mb-2">{t('AmountDue')}</p>
                         <h2 className="text-5xl font-black text-slate-900 tracking-tight mb-8">
                             <span className="text-3xl text-slate-400 mr-1">₹</span>{amountInRupees.toFixed(2)}
                         </h2>
 
                         <div className="space-y-4 mb-8">
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-500 font-medium">Service</span>
-                                <span className="font-bold text-slate-800 text-right">{requestData.service_type.replace(/_/g, ' ').toUpperCase()}</span>
+                                <span className="text-slate-500 font-medium">{t('Service')}</span>
+                                <span className="font-bold text-slate-800 text-right">{t(requestData.service_type.replace(/_/g, ' ').toUpperCase())}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-500 font-medium">Application ID</span>
+                                <span className="text-slate-500 font-medium">{t('AppID')}</span>
                                 <span className="font-mono font-bold text-slate-600">{requestData.id.split('-')[0]}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-500 font-medium">Fee Target</span>
-                                <span className="font-bold text-slate-800">{requestData.department}</span>
+                                <span className="text-slate-500 font-medium">{t('FeeTarget')}</span>
+                                <span className="font-bold text-slate-800">{t(requestData.department)}</span>
                             </div>
                         </div>
                     </div>
@@ -111,7 +113,7 @@ export default function PaymentPage() {
                     <div className="relative z-10 hidden md:block mt-8 pt-8 border-t border-slate-200">
                         <div className="flex items-center gap-2 text-slate-500 justify-center">
                             <LockClosedIcon className="w-4 h-4" />
-                            <span className="text-xs font-bold uppercase tracking-wider">256-bit Secure Encryption</span>
+                            <span className="text-xs font-bold uppercase tracking-wider">{t('SecureEnc')}</span>
                         </div>
                     </div>
                 </div>
@@ -120,8 +122,8 @@ export default function PaymentPage() {
                 <div className="p-8 md:p-12 md:w-7/12 bg-white flex flex-col items-center justify-center text-center">
 
                     <div className="mb-8">
-                        <h3 className="text-2xl font-black text-slate-800 mb-2">Scan with any UPI App</h3>
-                        <p className="text-slate-500 text-sm max-w-xs mx-auto">Open Google Pay, PhonePe, Paytm, or BHIM to complete this transaction securely.</p>
+                        <h3 className="text-2xl font-black text-slate-800 mb-2">{t('ScanUPI')}</h3>
+                        <p className="text-slate-500 text-sm max-w-xs mx-auto">{t('ScanUPIDesc')}</p>
                     </div>
 
                     <div className="relative group mb-10 cursor-pointer" onClick={handleUPIPayment}>
@@ -139,7 +141,7 @@ export default function PaymentPage() {
                             {processingPayment && (
                                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center z-10 animate-in fade-in">
                                     <div className="w-10 h-10 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin mb-3"></div>
-                                    <p className="font-bold text-primary-700 animate-pulse">Confirming...</p>
+                                    <p className="font-bold text-primary-700 animate-pulse">{t('Confirming')}</p>
                                 </div>
                             )}
                         </div>
@@ -160,10 +162,10 @@ export default function PaymentPage() {
                             className="w-full px-8 py-4 font-extrabold text-white bg-slate-900 hover:bg-primary-600 rounded-xl transition-all shadow-lg hover:shadow-primary-500/30 disabled:opacity-50 text-lg flex items-center justify-center gap-3 relative overflow-hidden group"
                         >
                             {processingPayment ? (
-                                <span>Verifying Payment</span>
+                                <span>{t('VerifyingPayment')}</span>
                             ) : (
                                 <>
-                                    Simulate Payment Success
+                                    {t('SimulateSuccess')}
                                     <CheckBadgeIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
                                 </>
                             )}
@@ -173,7 +175,7 @@ export default function PaymentPage() {
                     <div className="mt-8 pt-6 border-t border-slate-100 w-full md:hidden">
                         <div className="flex items-center gap-2 text-slate-400 justify-center">
                             <LockClosedIcon className="w-4 h-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Secure Encrypted Checkout</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">{t('SecureEncCheckout')}</span>
                         </div>
                     </div>
                 </div>

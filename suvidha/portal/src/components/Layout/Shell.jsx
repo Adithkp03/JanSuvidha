@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useStore from '../../store/useStore';
 import LanguageSelector from '../LanguageSelector';
 import { UserCircleIcon, ArrowRightOnRectangleIcon, ArrowPathIcon, BellIcon } from '@heroicons/react/24/outline';
 import { syncQueue } from '../../utils/offlineSync';
 
 export default function Shell({ workspace }) {
+    const { t } = useTranslation();
     const { user, logout, offlineQueue } = useStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -37,13 +39,13 @@ export default function Shell({ workspace }) {
     // Simple breadcrumb logic
     const getBreadcrumbs = () => {
         const path = location.pathname;
-        if (path === '/citizen') return [{ name: 'Home', href: '/citizen' }];
+        if (path === '/citizen') return [{ name: t('Home'), href: '/citizen' }];
         const segments = path.split('/').filter(Boolean);
-        const crumbs = [{ name: 'Home', href: '/citizen' }];
-        if (segments[1] === 'apply') crumbs.push({ name: 'Apply Service', href: '#' });
-        if (segments[1] === 'receipt') crumbs.push({ name: 'Receipt', href: '#' });
-        if (segments[1] === 'track') crumbs.push({ name: 'Track Request', href: '#' });
-        if (segments[1] === 'payment') crumbs.push({ name: 'Payment', href: '#' });
+        const crumbs = [{ name: t('Home'), href: '/citizen' }];
+        if (segments[1] === 'apply') crumbs.push({ name: t('ApplyService'), href: '#' });
+        if (segments[1] === 'receipt') crumbs.push({ name: t('Receipt'), href: '#' });
+        if (segments[1] === 'track') crumbs.push({ name: t('TrackRequest'), href: '#' });
+        if (segments[1] === 'payment') crumbs.push({ name: t('Payment'), href: '#' });
         return crumbs;
     };
 
@@ -74,7 +76,7 @@ export default function Shell({ workspace }) {
                                         JanSuvidha
                                     </h1>
                                     <p className={`text-xs font-semibold tracking-wider uppercase mt-1 ${workspace === 'admin' ? 'text-indigo-300' : 'text-primary-600'}`}>
-                                        {workspace === 'admin' ? 'Digital Dashboard' : 'Citizen Portal'}
+                                        {workspace === 'admin' ? 'Digital Dashboard' : t('Title')}
                                     </p>
                                 </div>
                             </Link>
@@ -98,7 +100,7 @@ export default function Shell({ workspace }) {
                         <div className="flex items-center gap-2 sm:gap-4">
                             {isOnline && offlineQueue.length > 0 && (
                                 <button onClick={manualSync} disabled={syncing} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-xl text-xs hover:bg-amber-200 transition-colors border border-amber-200 shadow-sm">
-                                    <ArrowPathIcon className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} /> Sync ({offlineQueue.length})
+                                    <ArrowPathIcon className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} /> {t('SyncNow')} ({offlineQueue.length})
                                 </button>
                             )}
 
@@ -106,7 +108,7 @@ export default function Shell({ workspace }) {
                                 {/* Accessibility removed per request */}
                             </div>
 
-                            <div className="hidden sm:block">
+                            <div className="block">
                                 <LanguageSelector />
                             </div>
 
@@ -121,12 +123,12 @@ export default function Shell({ workspace }) {
                             {/* Profile Dropdown (Simplified) */}
                             <div className={`flex items-center gap-3 p-1.5 rounded-full pr-4 transition-colors ${workspace === 'admin' ? 'hover:bg-slate-800' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'}`}>
                                 <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold shadow-sm ${workspace === 'admin' ? 'bg-slate-800 text-indigo-400' : 'bg-primary-50 text-primary-700'}`}>
-                                    {user?.name?.charAt(0) || 'C'}
+                                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'C'}
                                 </div>
-                                <div className="hidden sm:flex flex-col items-start">
-                                    <span className="text-sm font-bold leading-tight">{user?.name || 'Citizen User'}</span>
-                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${workspace === 'admin' ? 'text-indigo-400' : 'text-slate-500'}`}>
-                                        {user?.roles?.includes('admin') ? 'Administrator' : 'Verified'}
+                                <div className="flex flex-col items-start bg-transparent">
+                                    <span className="text-sm font-bold leading-tight max-w-[100px] truncate">{user?.name || user?.email || t('Citizen')}</span>
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest hidden sm:block ${workspace === 'admin' ? 'text-indigo-400' : 'text-slate-500'}`}>
+                                        {user?.roles?.includes('admin') ? t('Admin') : 'VERIFIED'}
                                     </span>
                                 </div>
                                 <button onClick={handleLogout} className={`ml-2 p-1.5 rounded-full transition-colors ${workspace === 'admin' ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400 hover:text-slate-700'}`} title="Log out safely">

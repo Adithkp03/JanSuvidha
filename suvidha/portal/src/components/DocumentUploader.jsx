@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { ArrowUpTrayIcon, DocumentCheckIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 // Uploader Handles Single Doc Requirement
 export default function DocumentUploader({ requirement, onUploaded, existingDoc }) {
+    const { t } = useTranslation();
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
@@ -59,7 +61,7 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc 
                 };
                 setDocModel(doc);
                 onUploaded(requirement, doc);
-                setError('Offline. Document queued for sync.');
+                setError(t('OfflineDocQueued'));
             } else {
                 setError(err.response?.data?.error || 'Upload failed');
             }
@@ -80,7 +82,7 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc 
                         <DocumentCheckIcon className="w-6 h-6 text-emerald-600" />
                     </div>
                     <div className="overflow-hidden">
-                        <p className="font-extrabold text-slate-800 text-sm md:text-base truncate">{humanReadableReq}</p>
+                        <p className="font-extrabold text-slate-800 text-sm md:text-base truncate">{t(humanReadableReq)}</p>
                         <p className="text-sm font-medium text-emerald-700 truncate mt-0.5">
                             {docModel.filename} {docModel.pendingSync && <span className="italic opacity-80">(Queued)</span>}
                         </p>
@@ -101,7 +103,7 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc 
     return (
         <div className={`relative flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-3xl border-2 border-dashed transition-all duration-300 ${file ? 'border-primary-400 bg-primary-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-primary-300'}`}>
 
-            <p className="font-black text-slate-800 text-lg mb-2 z-10">{humanReadableReq}</p>
+            <p className="font-black text-slate-800 text-lg mb-2 z-10">{t(humanReadableReq)}</p>
 
             {!file ? (
                 <div className="flex flex-col items-center z-10 w-full mt-2">
@@ -109,8 +111,8 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc 
                         <div className="w-16 h-16 bg-white rounded-full shadow-md border border-slate-100 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
                             <ArrowUpTrayIcon className="w-7 h-7 text-primary-600" />
                         </div>
-                        <span className="text-base font-bold text-primary-600 group-hover:text-primary-800 transition-colors">Click to browse</span>
-                        <span className="text-sm font-medium text-slate-400 mt-2 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">PDF, JPG, PNG up to 5MB</span>
+                        <span className="text-base font-bold text-primary-600 group-hover:text-primary-800 transition-colors">{t('ClickToBrowse')}</span>
+                        <span className="text-sm font-medium text-slate-400 mt-2 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">{t('UploadFormatDesc')}</span>
                         <input type="file" className="hidden" accept=".pdf,image/*" onChange={handleFileChange} />
                     </label>
                 </div>
@@ -126,7 +128,7 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc 
                     {uploading ? (
                         <div className="w-full mt-2">
                             <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-bold text-primary-600 uppercase tracking-wider">Uploading</span>
+                                <span className="text-xs font-bold text-primary-600 uppercase tracking-wider">{t('UploadingState')}</span>
                                 <span className="text-xs font-bold text-primary-600">{progress}%</span>
                             </div>
                             <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
@@ -136,10 +138,10 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc 
                     ) : (
                         <div className="flex gap-3 justify-between items-center mt-2">
                             <button onClick={() => setFile(null)} className="flex-1 py-2.5 px-4 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
-                                Replace
+                                {t('ReplaceBtn')}
                             </button>
                             <button onClick={uploadFile} className="flex-1 py-2.5 px-4 text-sm font-bold text-white bg-slate-900 rounded-xl shadow-[0_4px_14px_0_rgba(15,23,42,0.39)] hover:shadow-[0_6px_20px_0_rgba(15,23,42,0.23)] hover:bg-primary-600 transition-all flex items-center justify-center gap-2 group">
-                                Upload
+                                {t('UploadBtn')}
                                 <ArrowUpTrayIcon className="w-4 h-4 group-hover:-translate-y-1 transition-transform" />
                             </button>
                         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import FormRenderer from '../../components/FormRenderer';
 import DocumentUploader from '../../components/DocumentUploader';
 import api from '../../services/api';
@@ -7,6 +8,7 @@ import useStore from '../../store/useStore';
 import { CheckCircleIcon, DocumentTextIcon, UserIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 
 export default function DynamicForm() {
+    const { t } = useTranslation();
     const { state } = useLocation();
     const navigate = useNavigate();
     const { user } = useStore();
@@ -39,7 +41,7 @@ export default function DynamicForm() {
         if (loading) return (
             <div className="flex flex-col items-center justify-center min-h-[50vh]">
                 <div className="w-12 h-12 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
-                <p className="mt-4 text-slate-500 font-bold animate-pulse">Loading Application Details...</p>
+                <p className="mt-4 text-slate-500 font-bold animate-pulse">{t('LoadingApp')}</p>
             </div>
         );
         return (
@@ -47,14 +49,16 @@ export default function DynamicForm() {
                 <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
                     <DocumentTextIcon className="w-10 h-10 text-slate-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">Service Not Found</h2>
-                <p className="text-slate-500 mb-6 max-w-sm">We couldn't locate the details for this service. Please return to the dashboard and try again.</p>
-                <button onClick={() => navigate('/citizen')} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">Return to Dashboard</button>
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('ServiceNotFound')}</h2>
+                <p className="text-slate-500 mb-6 max-w-sm">{t('ServiceNotFoundDesc')}</p>
+                <button onClick={() => navigate('/citizen')} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">{t('ReturnToDashboard')}</button>
             </div>
         );
     }
 
-    const docsRequired = serviceData.required_documents || [];
+    const docsRequired = (serviceData.code === 'elec_bill_pay' || serviceData.service_type === 'elec_bill_pay')
+        ? []
+        : (serviceData.required_documents || []);
     const formSchema = serviceData.form_schema || [];
 
     const handleFormSubmit = (data) => {
@@ -80,7 +84,7 @@ export default function DynamicForm() {
     const proceedToReview = () => {
         const missing = docsRequired.filter(d => !uploadedDocs[d]);
         if (missing.length > 0) {
-            setError(`Please upload all required documents: ${missing.join(', ').replace(/_/g, ' ')}`);
+            setError(`${t('PleaseUploadAllRequiredDocs')}: ${missing.join(', ').replace(/_/g, ' ')}`);
             return;
         }
         setError('');
@@ -142,9 +146,9 @@ export default function DynamicForm() {
 
     // Stepper Configuration
     const steps = [
-        { num: 1, label: 'Fill Details', icon: UserIcon },
-        { num: 2, label: 'Upload Docs', icon: DocumentTextIcon, hidden: docsRequired.length === 0 },
-        { num: 3, label: 'Review & Submit', icon: CheckBadgeIcon }
+        { num: 1, label: t('FillDetails'), icon: UserIcon },
+        { num: 2, label: t('UploadDocs'), icon: DocumentTextIcon, hidden: docsRequired.length === 0 },
+        { num: 3, label: t('ReviewAndSubmit'), icon: CheckBadgeIcon }
     ].filter(s => !s.hidden);
 
     const activeStepIndex = steps.findIndex(s => s.num === step);
@@ -156,11 +160,11 @@ export default function DynamicForm() {
             <div className="mb-10 text-center">
                 <div className="inline-flex items-center justify-center p-1.5 bg-primary-50 rounded-full mb-4 shadow-sm border border-primary-100">
                     <span className="px-3 py-1 bg-white text-primary-700 text-xs font-black tracking-widest uppercase rounded-full shadow-sm">
-                        {serviceData.department}
+                        {t(serviceData.department)}
                     </span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 tracking-tight mb-4">{serviceData.name}</h1>
-                <p className="text-slate-500 text-lg max-w-2xl mx-auto">{serviceData.description}</p>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 tracking-tight mb-4">{t(serviceData.name)}</h1>
+                <p className="text-slate-500 text-lg max-w-2xl mx-auto">{t(serviceData.description)}</p>
             </div>
 
             {/* Redesigned Premium Stepper */}
@@ -183,8 +187,8 @@ export default function DynamicForm() {
                         return (
                             <div key={s.num} className="flex flex-col items-center group">
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-500 border-4 border-white ${isActive ? 'bg-primary-600 text-white scale-110 shadow-primary-500/40 outline outline-4 outline-primary-50' :
-                                        isCompleted ? 'bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer' :
-                                            'bg-slate-100 text-slate-400'
+                                    isCompleted ? 'bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer' :
+                                        'bg-slate-100 text-slate-400'
                                     }`}
                                     onClick={() => { if (isCompleted) setStep(s.num); }}
                                 >
@@ -222,8 +226,8 @@ export default function DynamicForm() {
                     {step === 2 && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
                             <div className="border-b border-slate-100 pb-6 mb-8">
-                                <h3 className="text-2xl font-black text-slate-800 mb-2">Provide Documentation</h3>
-                                <p className="text-slate-500 text-lg">Please upload clear, legible copies of the following official documents.</p>
+                                <h3 className="text-2xl font-black text-slate-800 mb-2">{t('ProvideDocs')}</h3>
+                                <p className="text-slate-500 text-lg">{t('UploadDocsDesc')}</p>
                             </div>
 
                             {error && (
@@ -246,10 +250,10 @@ export default function DynamicForm() {
 
                             <div className="flex flex-col-reverse sm:flex-row justify-between items-center sm:gap-4 pt-10 mt-10 border-t border-slate-100">
                                 <button onClick={() => setStep(1)} className="w-full sm:w-auto mt-4 sm:mt-0 px-8 py-4 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-                                    &larr; Back to Details
+                                    &larr; {t('BackToDetails')}
                                 </button>
                                 <button onClick={proceedToReview} className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white font-extrabold text-lg rounded-xl shadow-xl hover:bg-primary-600 hover:shadow-primary-500/30 transition-all duration-300">
-                                    Review Application
+                                    {t('ReviewApplication')}
                                 </button>
                             </div>
                         </div>
@@ -259,8 +263,8 @@ export default function DynamicForm() {
                         <div className="space-y-10 animate-in fade-in slide-in-from-right-8 duration-500">
 
                             <div className="text-center sm:text-left border-b border-slate-100 pb-6">
-                                <h3 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">Application Summary</h3>
-                                <p className="text-slate-500 text-lg">Verify your information before finalizing the submission.</p>
+                                <h3 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">{t('ApplicationSummary')}</h3>
+                                <p className="text-slate-500 text-lg">{t('VerifyInfoDesc')}</p>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -269,9 +273,9 @@ export default function DynamicForm() {
                                     <div className="flex items-center justify-between">
                                         <h4 className="font-black text-slate-800 flex items-center gap-2 text-xl">
                                             <UserIcon className="w-6 h-6 text-primary-500" />
-                                            Applicant Details
+                                            {t('ApplicantDetails')}
                                         </h4>
-                                        <button onClick={() => setStep(1)} className="text-sm font-bold text-primary-600 hover:underline">Edit</button>
+                                        <button onClick={() => setStep(1)} className="text-sm font-bold text-primary-600 hover:underline">{t('EditBtn')}</button>
                                     </div>
                                     <div className="bg-slate-50/80 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-slate-200">
                                         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
@@ -295,9 +299,9 @@ export default function DynamicForm() {
                                         <div className="flex items-center justify-between">
                                             <h4 className="font-black text-slate-800 flex items-center gap-2 text-xl">
                                                 <DocumentTextIcon className="w-6 h-6 text-amber-500" />
-                                                Attached Files
+                                                {t('AttachedFiles')}
                                             </h4>
-                                            <button onClick={() => setStep(2)} className="text-sm font-bold text-primary-600 hover:underline">Edit</button>
+                                            <button onClick={() => setStep(2)} className="text-sm font-bold text-primary-600 hover:underline">{t('EditBtn')}</button>
                                         </div>
                                         <div className="bg-emerald-50/50 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-emerald-100/50">
                                             <ul className="space-y-4">
@@ -331,7 +335,7 @@ export default function DynamicForm() {
                             <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-transparent pointer-events-none"></div>
                                 <p className="text-primary-100 font-medium relative z-10 text-center sm:text-left">
-                                    By submitting, you agree to the <a href="#" className="underline hover:text-white transition-colors">terms and conditions</a>.
+                                    {t('TermsAndConditions')}
                                 </p>
                                 <button
                                     disabled={submitting}
@@ -341,11 +345,11 @@ export default function DynamicForm() {
                                     {submitting ? (
                                         <>
                                             <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            Submitting Protocol...
+                                            {t('SubmittingProtocol')}
                                         </>
                                     ) : (
                                         <>
-                                            Submit Securely
+                                            {t('SubmitSecurely')}
                                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                                         </>
                                     )}
