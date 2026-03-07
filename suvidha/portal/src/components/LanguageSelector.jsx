@@ -6,9 +6,11 @@ import { GlobeAltIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 const LANGUAGES = [
     { code: 'en', label: 'English' },
     { code: 'hi', label: 'हिन्दी' },
-    { code: 'ml', label: 'മലയാളം' },
     { code: 'mr', label: 'मराठी' },
-    { code: 'te', label: 'తెలుగు' }
+    { code: 'ml', label: 'മലയാളം' },
+    { code: 'te', label: 'తెలుగు' },
+    { code: 'ta', label: 'தமிழ்' },
+    { code: 'kn', label: 'ಕನ್ನಡ' }
 ];
 
 export default function LanguageSelector() {

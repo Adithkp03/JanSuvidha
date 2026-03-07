@@ -5,13 +5,17 @@ import hi from './locales/hi.json';
 import ml from './locales/ml.json';
 import mr from './locales/mr.json';
 import te from './locales/te.json';
+import ta from './locales/ta.json';
+import kn from './locales/kn.json';
 
 const resources = {
     en: { translation: en },
     hi: { translation: hi },
     ml: { translation: ml },
     mr: { translation: mr },
-    te: { translation: te }
+    te: { translation: te },
+    ta: { translation: ta },
+    kn: { translation: kn }
 };
 
 i18n
