@@ -167,5 +167,19 @@
   "Consumer/Account ID": "ഉപഭോക്തൃ വിലാസം",
   "Amount (if known)": "തുക (അറിയാമെങ്കിൽ)",
   "Hazard Report": "അപകട റിപ്പോർട്ട്",
-  "Report safety hazard": "അപകടം റിപ്പോർട്ട് ചെയ്യുക"
+  "Report safety hazard": "അപകടം റിപ്പോർട്ട് ചെയ്യുക",
+  "DigitalCivic": "ഡിജിറ്റൽ സിവിക്",
+  "ServicesPortal": "സർവീസ് പോർട്ടൽ",
+  "PortalDesc": "സർക്കാർ സേവനങ്ങൾ വേഗത്തിൽ ആക്സസ് ചെയ്യുക. ഓരോ പൗരനും സുരക്ഷിതവും സുതാര്യവും തടസ്സമില്ലാത്തതുമായ അനുഭവം.",
+  "PoweredByAI": "AI അനലിറ്റിക്സ് പിന്തുണയോടെ",
+  "AIDesc": "നിങ്ങളുടെ ആവശ്യങ്ങൾ നിമിഷങ്ങൾക്കുള്ളിൽ ശരിയായ വകുപ്പിലേക്ക് സ്വയമേവ നൽകുന്നു.",
+  "FullNameLabel": "മുഴുവൻ പേര്",
+  "FullNamePlaceholder": "പ്രിയ ശർമ്മ",
+  "EmailPlaceholder": "yourid@example.com",
+  "EnableDemoMode": "ഡെവലപ്പർ ഡെമോ മോഡ് പ്രവർത്തനക്ഷമമാക്കുക (123456)",
+  "PasscodeSentTitle": "പാസ്കോഡ് അയച്ചു",
+  "PasscodeSentDesc": "ഞങ്ങൾ വളരെ സുരക്ഷിതമായ ഒരു 6-അക്ക കോഡ് അയച്ചിട്ടുണ്ട്",
+  "OTPPlaceholder": "------",
+  "SecureLogin": "സുരക്ഷിത ലോഗിൻ",
+  "CancelAnd": "റദ്ദാക്കുക, ഒപ്പം"
 }

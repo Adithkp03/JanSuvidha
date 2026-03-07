@@ -92,19 +92,19 @@ export default function LoginForm() {
                         </div>
 
                         <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight">
-                            Digital Civic <br />Services Portal
+                            {t('DigitalCivic')} <br />{t('ServicesPortal')}
                         </h2>
                         <p className="text-primary-100 text-lg font-medium max-w-sm">
-                            Access government services instantly. Secure, transparent, and seamless for every citizen.
+                            {t('PortalDesc')}
                         </p>
                     </div>
 
                     <div className="relative z-10 mt-12 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                         <div className="flex items-center gap-4 mb-3">
                             <SparklesIcon className="w-6 h-6 text-accent-400" />
-                            <span className="font-bold text-white tracking-wide">Powered by AI Analytics</span>
+                            <span className="font-bold text-white tracking-wide">{t('PoweredByAI')}</span>
                         </div>
-                        <p className="text-sm text-primary-100">Automatically routing your requests to the right department in seconds.</p>
+                        <p className="text-sm text-primary-100">{t('AIDesc')}</p>
                     </div>
                 </div>
 
@@ -148,13 +148,13 @@ export default function LoginForm() {
 
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="block text-sm font-bold text-slate-700">Full Name</label>
+                                    <label className="block text-sm font-bold text-slate-700">{t('FullNameLabel')}</label>
                                     <input
                                         type="text"
                                         value={name}
                                         onChange={e => setName(e.target.value)}
                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
-                                        placeholder="Priya Sharma"
+                                        placeholder={t('FullNamePlaceholder')}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -164,7 +164,7 @@ export default function LoginForm() {
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
-                                        placeholder="yourid@example.com"
+                                        placeholder={t('EmailPlaceholder')}
                                     />
                                 </div>
                             </div>
@@ -178,7 +178,7 @@ export default function LoginForm() {
                                     className="w-5 h-5 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
                                 />
                                 <label htmlFor="demoMode" className="text-sm font-semibold text-slate-500 select-none cursor-pointer hover:text-slate-800 transition-colors">
-                                    Enable Developer Demo Mode (123456)
+                                    {t('EnableDemoMode')}
                                 </label>
                             </div>
 
@@ -204,9 +204,9 @@ export default function LoginForm() {
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-primary-900 mb-1">Passcode Sent</p>
+                                    <p className="text-sm font-bold text-primary-900 mb-1">{t('PasscodeSentTitle')}</p>
                                     <p className="text-sm text-primary-700">
-                                        We sent a highly secure 6-digit code to <strong className="font-extrabold">{email}</strong>.
+                                        {t('PasscodeSentDesc')} <strong className="font-extrabold">{email}</strong>.
                                     </p>
                                 </div>
                             </div>
@@ -219,7 +219,7 @@ export default function LoginForm() {
                                     value={otp}
                                     onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
                                     className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-3xl tracking-[0.5em] text-center font-black font-mono transition-colors"
-                                    placeholder="------"
+                                    placeholder={t('OTPPlaceholder')}
                                     autoFocus
                                 />
                             </div>
@@ -230,7 +230,7 @@ export default function LoginForm() {
                                     disabled={loading || otp.length < 6}
                                     className="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                                 >
-                                    {loading ? t('Verifying') : 'Secure Login'}
+                                    {loading ? t('Verifying') : t('SecureLogin')}
                                 </button>
 
                                 <button
@@ -238,7 +238,7 @@ export default function LoginForm() {
                                     onClick={() => { setStep(1); setOtp(''); }}
                                     className="w-full text-center py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
                                 >
-                                    Cancel & {t('ChangeEmail')}
+                                    {t('CancelAnd')} {t('ChangeEmail')}
                                 </button>
                             </div>
                         </form>

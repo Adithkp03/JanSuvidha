@@ -167,5 +167,19 @@
   "Consumer/Account ID": "उपभोक्ता/खाता आईडी",
   "Amount (if known)": "राशि (यदि ज्ञात हो)",
   "Hazard Report": "खतरे की रिपोर्ट",
-  "Report safety hazard": "सुरक्षा खतरे की रिपोर्ट करें"
+  "Report safety hazard": "सुरक्षा खतरे की रिपोर्ट करें",
+  "DigitalCivic": "डिजिटल नागरिक",
+  "ServicesPortal": "सेवा पोर्टल",
+  "PortalDesc": "सरकारी सेवाओं तक तुरंत पहुंचें। प्रत्येक नागरिक के लिए सुरक्षित, पारदर्शी और निर्बाध।",
+  "PoweredByAI": "AI एनालिटिक्स द्वारा संचालित",
+  "AIDesc": "स्वचालित रूप से आपके अनुरोधों को सेकंडों में सही विभाग को भेजना।",
+  "FullNameLabel": "पूरा नाम",
+  "FullNamePlaceholder": "प्रिया शर्मा",
+  "EmailPlaceholder": "yourid@example.com",
+  "EnableDemoMode": "डेवलपर डेमो मोड सक्षम करें (123456)",
+  "PasscodeSentTitle": "पासकोड भेजा गया",
+  "PasscodeSentDesc": "हमने 6 अंकों का अत्यधिक सुरक्षित कोड भेजा है",
+  "OTPPlaceholder": "------",
+  "SecureLogin": "सुरक्षित लॉगिन",
+  "CancelAnd": "रद्द करें और"
 }

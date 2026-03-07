@@ -167,5 +167,19 @@
   "Consumer/Account ID": "వినియోగదారు/ఖాతా ఐడీ",
   "Amount (if known)": "మొత్తం (తెలిస్తే)",
   "Hazard Report": "ప్రమాద నివేదిక",
-  "Report safety hazard": "ప్రమాదం గురించి నివేదించండి"
+  "Report safety hazard": "ప్రమాదం గురించి నివేదించండి",
+  "DigitalCivic": "డిజిటల్ సివిక్",
+  "ServicesPortal": "సేవల పోర్టల్",
+  "PortalDesc": "ప్రభుత్వ సేవలను తక్షణమే యాక్సెస్ చేయండి. ప్రతి పౌరుడికి సురక్షితమైనది, పారదర్శకమైనది మరియు అతుకులు లేనిది.",
+  "PoweredByAI": "AI అనలిటిక్స్ ద్వారా ఆధారితం",
+  "AIDesc": "మీ అభ్యర్థనలను క్షణాల్లో సరైన విభాగానికి ఆటోమేటిక్‌గా పంపుతోంది.",
+  "FullNameLabel": "పూర్తి పేరు",
+  "FullNamePlaceholder": "ప్రియా శర్మ",
+  "EmailPlaceholder": "yourid@example.com",
+  "EnableDemoMode": "డెవలపర్ డెమో మోడ్‌ని ప్రారంభించండి (123456)",
+  "PasscodeSentTitle": "పాస్‌కోడ్ పంపబడింది",
+  "PasscodeSentDesc": "మేము అత్యంత సురక్షితమైన 6-అంకెల కోడ్‌ను పంపాము",
+  "OTPPlaceholder": "------",
+  "SecureLogin": "సురక్షిత లాగిన్",
+  "CancelAnd": "రద్దు చేయి మరియు"
 }
