@@ -21,6 +21,8 @@ import TrackStatus from './pages/Citizen/TrackStatus';
 import Dashboard from './pages/Admin/Dashboard';
 import Requests from './pages/Admin/Requests';
 
+import MobileUpload from './pages/MobileUpload';
+
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -55,6 +57,9 @@ export default function App() {
                         role === 'admin' ? <Navigate to="/admin" replace /> :
                             <Navigate to="/citizen" replace />
                 } />
+
+                {/* Public Mobile Upload */}
+                <Route path="/upload" element={<MobileUpload />} />
 
                 {/* Citizen Workspace */}
                 <Route path="/citizen" element={

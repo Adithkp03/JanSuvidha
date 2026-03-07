@@ -94,8 +94,25 @@ app.get("/metrics", async (_req, reply) => {
   return client.register.metrics();
 });
 
+// In-memory cache for cross-device mobile uploads via QR code
+const uploadStatuses = new Map();
+
 await app.register(multipart, {
   limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+// Endpoint for the Kiosk to poll for completion
+app.get("/documents/upload-status", async (req, reply) => {
+  const token = req.query.token;
+  if (!token) return { completed: false };
+
+  const status = uploadStatuses.get(token);
+  if (status) {
+    // Optionally remove it so it's a one-time read
+    uploadStatuses.delete(token);
+    return status;
+  }
+  return { completed: false };
 });
 
 app.post("/documents/upload", async (req, reply) => {
@@ -105,6 +122,8 @@ app.post("/documents/upload", async (req, reply) => {
     return { ok: false, error: "file required (multipart field name: file)" };
   }
 
+  const token = req.query.token; // For QR code flow
+
   const objectKey = `${Date.now()}_${crypto.randomBytes(6).toString("hex")}_${file.filename}`;
   await ensureBucket();
 
@@ -113,6 +132,7 @@ app.post("/documents/upload", async (req, reply) => {
   });
 
   const client = await pool.connect();
+  let responsePayload;
   try {
     const id = crypto.randomUUID();
     const res = await client.query(
@@ -122,7 +142,7 @@ app.post("/documents/upload", async (req, reply) => {
       [id, null, file.filename, objectKey, file.mimetype || null, file.file?.bytes || null],
     );
 
-    reply.code(201).send({
+    responsePayload = {
       ok: true,
       bucket: BUCKET,
       object_key: objectKey,
@@ -133,7 +153,23 @@ app.post("/documents/upload", async (req, reply) => {
         mime_type: res.rows[0].mime_type,
         size: res.rows[0].size_bytes,
       },
-    });
+    };
+    reply.code(201).send(responsePayload);
+
+    if (token) {
+      uploadStatuses.set(token, {
+        completed: true,
+        id: res.rows[0].id,
+        object_key: objectKey,
+        filename: file.filename,
+        size: file.file?.bytes || file.file?.byteLength || 0,
+        mock: false
+      });
+
+      // Auto-cleanup after 10 minutes just in case
+      setTimeout(() => uploadStatuses.delete(token), 10 * 60 * 1000);
+    }
+
   } finally {
     client.release();
   }
