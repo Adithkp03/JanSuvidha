@@ -20,6 +20,7 @@ i18n
         resources,
         lng: "en",
         fallbackLng: "en",
+        keySeparator: false,
         interpolation: {
             escapeValue: false
         },
