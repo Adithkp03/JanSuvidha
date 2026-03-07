@@ -5,6 +5,16 @@ import useStore from '../store/useStore';
 import { saveOfflineItem, getOfflineItem } from '../utils/offlineSync';
 import { BoltIcon, FireIcon, BeakerIcon, BuildingOffice2Icon, HomeModernIcon, TruckIcon, ShieldExclamationIcon, BuildingLibraryIcon } from '@heroicons/react/24/solid';
 
+const FALLBACK_DEPARTMENTS = [
+    { id: 'dept_elec', code: 'electricity', name: 'Electricity', icon: 'Zap' },
+    { id: 'dept_gas', code: 'gas', name: 'Gas', icon: 'Flame' },
+    { id: 'dept_water', code: 'water', name: 'Water & Sewage', icon: 'Droplets' },
+    { id: 'dept_mc', code: 'mc', name: 'Municipal Corporation', icon: 'Building2' },
+    { id: 'dept_waste', code: 'waste', name: 'Waste Management', icon: 'Recycle' },
+    { id: 'dept_pw', code: 'public_works', name: 'Public Works', icon: 'Wrench' },
+    { id: 'dept_emergency', code: 'emergency', name: 'Emergency Services', icon: 'AlertTriangle' },
+];
+
 export default function DepartmentGrid({ onSelect }) {
     const { t } = useTranslation();
     const [departments, setDepartments] = useState([]);
@@ -21,13 +31,15 @@ export default function DepartmentGrid({ onSelect }) {
                     setLoading(false);
                 }
             } catch (err) {
-                if (err.offline) {
-                    const cached = await getOfflineItem('catalog_depts');
-                    if (active && cached) {
-                        setDepartments(cached);
-                        setLoading(false);
-                    }
+                // Try offline cache first
+                const cached = await getOfflineItem('catalog_depts');
+                if (active && cached) {
+                    setDepartments(cached);
+                } else if (active) {
+                    // Final fallback: use static department list
+                    setDepartments(FALLBACK_DEPARTMENTS);
                 }
+                if (active) setLoading(false);
             }
         };
         fetchDepts();
