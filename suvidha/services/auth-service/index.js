@@ -235,6 +235,83 @@ app.post(
   },
 );
 
+// Firebase Admin Setup
+import admin from 'firebase-admin';
+import { firebaseServiceAccount } from './firebaseAccountKey.js';
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(firebaseServiceAccount)
+  });
+}
+
+// Endpoint to verify Firebase ID Token and issue our JWT
+app.post(
+  "/firebase-login",
+  {
+    schema: {
+      body: {
+        type: "object",
+        required: ["token"],
+        properties: {
+          token: { type: "string" }
+        },
+      },
+    },
+  },
+  async (req, reply) => {
+    const idToken = req.body.token;
+
+    if (!idToken) {
+      reply.code(400).send(error("token_required", "Firebase ID token is required"));
+      return;
+    }
+
+    try {
+      // Verify token with Firebase Admin
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const phone = decodedToken.phone_number;
+
+      if (!phone) {
+        reply.code(400).send(error("invalid_token", "No phone number associated with this token"));
+        return;
+      }
+
+      // Create user session equivalent to the email flow
+      const user = {
+        id: `user-${crypto.createHash("sha256").update(phone).digest("hex").slice(0, 24)}`,
+        phone,
+        role: "citizen",
+      };
+
+      let jwtToken = null;
+      if (JWT_SECRET) {
+        jwtToken = jwt.sign(
+          {
+            sub: user.id,
+            phone: user.phone, // Adding phone as standard claim
+            role: user.role,
+          },
+          JWT_ALGORITHM === "RS256" ? JWT_PRIVATE_KEY : JWT_SECRET,
+          {
+            algorithm: JWT_ALGORITHM,
+            expiresIn: "1h",
+          },
+        );
+      }
+
+      reply.send({
+        token: jwtToken,
+        user,
+      });
+
+    } catch (err) {
+      app.log.error(err, "Firebase token verification failed");
+      reply.code(401).send(error("invalid_token", "Invalid or expired Firebase token"));
+    }
+  },
+);
+
 app.listen({ port: PORT, host: "0.0.0.0" }).catch((err) => {
   app.log.error(err);
   process.exit(1);

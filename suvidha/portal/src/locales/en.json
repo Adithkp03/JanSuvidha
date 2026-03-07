@@ -416,5 +416,18 @@
   "Enter new owner name": "Enter owner name",
   "Enter household address": "Enter household address",
   "Enter preferred distributor": "Enter distributor",
-  "Enter location/pole number": "Enter pole number"
+  "Enter location/pole number": "Enter pole number",
+  "tag_energy": "Energy Sector",
+  "tag_utilities": "Utilities",
+  "tag_civic": "Civic Admin",
+  "tag_sanitation": "Sanitation",
+  "tag_infrastructure": "Infrastructure",
+  "tag_priority": "High Priority",
+  "desc_electricity": "Grid outages and residential power services",
+  "desc_gas": "Gas connections, leaks, and safety inspections",
+  "desc_water": "Quality monitoring and billing connections",
+  "desc_municipal": "City documentation, permits, and licensing",
+  "desc_waste": "Recycling schedules and garbage collection",
+  "desc_public_works": "Infrastructure maintenance and urban planning",
+  "desc_emergency": "Direct link to police, fire, and medical response"
 }

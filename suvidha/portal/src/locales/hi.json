@@ -416,5 +416,18 @@
   "Enter new owner name": "मालिक का नाम दर्ज करें",
   "Enter household address": "घर का पता दर्ज करें",
   "Enter preferred distributor": "वितरक दर्ज करें",
-  "Enter location/pole number": "पोल संख्या दर्ज करें"
+  "Enter location/pole number": "पोल संख्या दर्ज करें",
+  "tag_energy": "ऊर्जा क्षेत्र",
+  "tag_utilities": "उपयोगिताएं",
+  "tag_civic": "नागरिक प्रशासन",
+  "tag_sanitation": "स्वच्छता",
+  "tag_infrastructure": "बुनियादी ढांचा",
+  "tag_priority": "उच्च प्राथमिकता",
+  "desc_electricity": "ग्रिड आउटेज और आवासीय बिजली सेवाएं",
+  "desc_gas": "गैस कनेक्शन, लीक और सुरक्षा निरीक्षण",
+  "desc_water": "गुणवत्ता निगरानी और बिलिंग कनेक्शन",
+  "desc_municipal": "शहर के दस्तावेज, परमिट और लाइसेंसिंग",
+  "desc_waste": "रीसाइक्लिंग कार्यक्रम और कचरा संग्रहण",
+  "desc_public_works": "बुनियादी ढांचा रखरखाव और शहरी नियोजन",
+  "desc_emergency": "पुलिस, अग्नि और चिकित्सा प्रतिक्रिया के लिए सीधा लिंक"
 }

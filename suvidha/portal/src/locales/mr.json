@@ -417,5 +417,18 @@
   "Enter new owner name": "मालकाचे नाव एंटर करा",
   "Enter household address": "घराचा पत्ता एंटर करा",
   "Enter preferred distributor": "वितरक एंटर करा",
-  "Enter location/pole number": "पोल नंबर एंटर करा"
+  "Enter location/pole number": "पोल नंबर एंटर करा",
+  "tag_energy": "ऊर्जा क्षेत्र",
+  "tag_utilities": "युटिलिटीज",
+  "tag_civic": "नागरी प्रशासन",
+  "tag_sanitation": "स्वच्छता",
+  "tag_infrastructure": "पायाभूत सुविधा",
+  "tag_priority": "उच्च प्राधान्य",
+  "desc_electricity": "ग्रिड आउटेज आणि निवासी वीज सेवा",
+  "desc_gas": "गॅस कनेक्शन, लीक आणि सुरक्षा तपासणी",
+  "desc_water": "गुणवत्ता निरीक्षण आणि बिलिंग कनेक्शन",
+  "desc_municipal": "शहर दस्तऐवज, परवाने आणि परवाना",
+  "desc_waste": "पुनर्वापर वेळापत्रक आणि कचरा संकलन",
+  "desc_public_works": "पायाभूत सुविधा देखभाल आणि शहरी नियोजन",
+  "desc_emergency": "पोलीस, अग्निशमन आणि वैद्यकीय प्रतिसादासाठी थेट लिंक"
 }

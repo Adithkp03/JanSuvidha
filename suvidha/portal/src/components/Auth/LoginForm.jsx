@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../../store/useStore';
 import api from '../../services/api';
 import LanguageSelector from '../LanguageSelector';
-import { ShieldCheckIcon, UserIcon, IdentificationIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon, UserIcon, IdentificationIcon, SparklesIcon, DevicePhoneMobileIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { auth } from '../../services/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 export default function LoginForm() {
     const { t } = useTranslation();
@@ -12,8 +14,10 @@ export default function LoginForm() {
     const setAuth = useStore(state => state.setAuth);
     const setRole = useStore(state => state.setRole);
 
+    const [authMethod, setAuthMethod] = useState('email'); // 'email' or 'phone'
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [step, setStep] = useState(1);
     const [roleSelected, setRoleSelected] = useState('citizen');
@@ -21,30 +25,69 @@ export default function LoginForm() {
     const [loading, setLoading] = useState(false);
     const [demoMode, setDemoMode] = useState(false);
 
+    // To store Firebase verification result
+    const [confirmationResult, setConfirmationResult] = useState(null);
+
+    useEffect(() => {
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    // reCAPTCHA solved
+                }
+            });
+        }
+    }, []);
+
     const handleSendOtp = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (demoMode) {
+        if (demoMode && authMethod === 'email') {
             setOtp('123456');
             setStep(2);
             return;
         }
 
-        if (!email) {
+        if (authMethod === 'email' && !email) {
             setError(t('auth.enter_valid_email', 'Please enter a valid email'));
+            return;
+        }
+        if (authMethod === 'phone' && (!phone || phone.length < 10)) {
+            setError(t('auth.enter_valid_phone', 'Please enter a valid phone number with country code (e.g., +919876543210)'));
             return;
         }
 
         setLoading(true);
         try {
-            const resp = await api.post('/auth/otp', { email });
-            if (process.env.NODE_ENV === 'development') {
-                console.log('OTP Hint:', resp.data.otp_hint);
+            if (authMethod === 'email') {
+                const resp = await api.post('/auth/otp', { email });
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('OTP Hint:', resp.data.otp_hint);
+                }
+                setStep(2);
+            } else {
+                // Firebase Phone Auth
+                const appVerifier = window.recaptchaVerifier;
+                const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`; // Auto-add India code if missing
+                const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+                setConfirmationResult(result);
+                setStep(2);
             }
-            setStep(2);
         } catch (err) {
-            setError(err.response?.data?.error || err.response?.data?.message || err.message || t('auth.error', 'Error sending OTP'));
+            console.error(err);
+            if (authMethod === 'phone' && err.code === 'auth/invalid-phone-number') {
+                setError('Invalid Phone Number. Make sure to include the country code (e.g. +91).');
+            } else {
+                setError(err.response?.data?.error || err.response?.data?.message || err.message || t('auth.error', 'Error sending OTP'));
+            }
+
+            // Reset recaptcha if phone auth failed so user can try again
+            if (authMethod === 'phone' && window.recaptchaVerifier) {
+                window.recaptchaVerifier.render().then(function (widgetId) {
+                    window.grecaptcha.reset(widgetId);
+                });
+            }
         } finally {
             setLoading(false);
         }
@@ -53,25 +96,47 @@ export default function LoginForm() {
     const handleVerify = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (demoMode && otp === '123456') {
-            setAuth('demo-jwt-token-123', { id: 'demo', email, name, role: roleSelected });
-            setRole(roleSelected);
-            navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
-            return;
-        }
-
         setLoading(true);
-        try {
-            const resp = await api.post('/auth/verify', { email, otp });
-            const userData = resp.data.user || { email, role: roleSelected };
-            if (name) userData.name = name;
 
-            setAuth(resp.data.token, userData);
-            setRole(roleSelected);
-            navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
+        try {
+            if (authMethod === 'email') {
+                if (demoMode && otp === '123456') {
+                    setAuth('demo-jwt-token-123', { id: 'demo', email, name, role: roleSelected });
+                    setRole(roleSelected);
+                    navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
+                    setLoading(false);
+                    return;
+                }
+
+                const resp = await api.post('/auth/verify', { email, otp });
+                const userData = resp.data.user || { email, role: roleSelected };
+                if (name) userData.name = name;
+
+                setAuth(resp.data.token, userData);
+                setRole(roleSelected);
+                navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
+            } else {
+                // Firebase Verify
+                const result = await confirmationResult.confirm(otp);
+                const user = result.user;
+                const idToken = await user.getIdToken();
+
+                // Exchange Firebase token for our native JWT via new backend endpoint
+                const resp = await api.post('/auth/firebase-login', { token: idToken });
+                const userData = resp.data.user || { phone: user.phoneNumber, role: roleSelected };
+                if (name) userData.name = name;
+
+                setAuth(resp.data.token, userData);
+                setRole(roleSelected);
+                navigate(roleSelected === 'admin' ? '/admin' : '/citizen');
+            }
         } catch (err) {
-            setError(err.response?.data?.error || err.response?.data?.message || err.message || t('auth.invalid_otp', 'Invalid OTP'));
+            console.error(err);
+            if (authMethod === 'phone' && err.code === 'auth/invalid-verification-code') {
+                setError('Invalid OTP code');
+            } else {
+                setError(err.response?.data?.error || err.response?.data?.message || err.message || t('auth.invalid_otp', 'Invalid OTP'));
+            }
         } finally {
             setLoading(false);
         }
@@ -132,18 +197,42 @@ export default function LoginForm() {
 
                     {step === 1 ? (
                         <form onSubmit={handleSendOtp} className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+
+                            {/* Firebase Invisible Recaptcha */}
+                            <div id="recaptcha-container"></div>
+
                             {/* Role Selectors */}
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <label className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 cursor-pointer transition-all ${roleSelected === 'citizen' ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-md transform -translate-y-1' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-500'}`}>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <label className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 cursor-pointer transition-all ${roleSelected === 'citizen' ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-md transform -translate-y-1' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-500'}`}>
                                     <input type="radio" value="citizen" checked={roleSelected === 'citizen'} onChange={() => setRoleSelected('citizen')} className="sr-only" />
                                     <UserIcon className={`w-8 h-8 mb-2 ${roleSelected === 'citizen' ? 'text-primary-600' : 'text-slate-400'}`} />
                                     <span className="font-bold">{t('Citizen')}</span>
                                 </label>
-                                <label className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 cursor-pointer transition-all ${roleSelected === 'admin' ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-md transform -translate-y-1' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-500'}`}>
+                                <label className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 cursor-pointer transition-all ${roleSelected === 'admin' ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-md transform -translate-y-1' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-500'}`}>
                                     <input type="radio" value="admin" checked={roleSelected === 'admin'} onChange={() => setRoleSelected('admin')} className="sr-only" />
                                     <IdentificationIcon className={`w-8 h-8 mb-2 ${roleSelected === 'admin' ? 'text-indigo-600' : 'text-slate-400'}`} />
                                     <span className="font-bold">{t('Admin')}</span>
                                 </label>
+                            </div>
+
+                            {/* Auth Method Toggle */}
+                            <div className="flex p-1 bg-slate-100 rounded-lg mb-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setAuthMethod('email')}
+                                    className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all flex items-center justify-center gap-2 ${authMethod === 'email' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <EnvelopeIcon className="w-4 h-4" />
+                                    Email Code
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setAuthMethod('phone')}
+                                    className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all flex items-center justify-center gap-2 ${authMethod === 'phone' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <DevicePhoneMobileIcon className="w-4 h-4" />
+                                    Phone SMS
+                                </button>
                             </div>
 
                             <div className="space-y-4">
@@ -153,34 +242,52 @@ export default function LoginForm() {
                                         type="text"
                                         value={name}
                                         onChange={e => setName(e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
+                                        className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
                                         placeholder={t('FullNamePlaceholder')}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-bold text-slate-700">{t('EnterEmail')}</label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={e => setEmail(e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
-                                        placeholder={t('EmailPlaceholder')}
-                                    />
-                                </div>
+
+                                {authMethod === 'email' ? (
+                                    <div className="space-y-1.5">
+                                        <label className="block text-sm font-bold text-slate-700">{t('EnterEmail')}</label>
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={e => setEmail(e.target.value)}
+                                            className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
+                                            placeholder={t('EmailPlaceholder')}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="space-y-1.5">
+                                        <label className="block text-sm font-bold text-slate-700">{t('EnterPhone', 'Enter Phone Number')}</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="tel"
+                                                value={phone}
+                                                onChange={e => setPhone(e.target.value)}
+                                                className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus-ring text-lg transition-colors placeholder:text-slate-400"
+                                                placeholder="+919876543210"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="flex items-center gap-3 pt-2">
-                                <input
-                                    type="checkbox"
-                                    id="demoMode"
-                                    checked={demoMode}
-                                    onChange={e => setDemoMode(e.target.checked)}
-                                    className="w-5 h-5 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
-                                />
-                                <label htmlFor="demoMode" className="text-sm font-semibold text-slate-500 select-none cursor-pointer hover:text-slate-800 transition-colors">
-                                    {t('EnableDemoMode')}
-                                </label>
-                            </div>
+                            {authMethod === 'email' && (
+                                <div className="flex items-center gap-3 pt-2">
+                                    <input
+                                        type="checkbox"
+                                        id="demoMode"
+                                        checked={demoMode}
+                                        onChange={e => setDemoMode(e.target.checked)}
+                                        className="w-5 h-5 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+                                    />
+                                    <label htmlFor="demoMode" className="text-sm font-semibold text-slate-500 select-none cursor-pointer hover:text-slate-800 transition-colors">
+                                        {t('EnableDemoMode')}
+                                    </label>
+                                </div>
+                            )}
 
                             <button
                                 type="submit"
@@ -206,7 +313,7 @@ export default function LoginForm() {
                                 <div>
                                     <p className="text-sm font-bold text-primary-900 mb-1">{t('PasscodeSentTitle')}</p>
                                     <p className="text-sm text-primary-700">
-                                        {t('PasscodeSentDesc')} <strong className="font-extrabold">{email}</strong>.
+                                        {t('PasscodeSentDesc')} <strong className="font-extrabold">{authMethod === 'email' ? email : phone}</strong>.
                                     </p>
                                 </div>
                             </div>
@@ -238,7 +345,7 @@ export default function LoginForm() {
                                     onClick={() => { setStep(1); setOtp(''); }}
                                     className="w-full text-center py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
                                 >
-                                    {t('CancelAnd')} {t('ChangeEmail')}
+                                    {t('CancelAnd')} {authMethod === 'email' ? t('ChangeEmail') : 'Change Phone'}
                                 </button>
                             </div>
                         </form>
