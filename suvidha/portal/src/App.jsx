@@ -9,6 +9,7 @@ import Shell from './components/Layout/Shell';
 
 // Auth
 import LoginForm from './components/Auth/LoginForm';
+import AdminLoginForm from './components/Auth/AdminLoginForm';
 
 // Citizen Pages
 import StartFlow from './pages/Citizen/StartFlow';
@@ -58,6 +59,11 @@ export default function App() {
                             <Navigate to="/citizen" replace />
                 } />
 
+                {/* Admin Auth */}
+                <Route path="/admin/login" element={
+                    !token ? <AdminLoginForm /> : <Navigate to="/admin" replace />
+                } />
+
                 {/* Public Mobile Upload */}
                 <Route path="/upload" element={<MobileUpload />} />
 
@@ -74,7 +80,7 @@ export default function App() {
 
                 {/* Admin Workspace */}
                 <Route path="/admin" element={
-                    token && role === 'admin' ? <Shell workspace="admin" /> : <Navigate to="/" replace />
+                    token && role === 'admin' ? <Shell workspace="admin" /> : <Navigate to="/admin/login" replace />
                 }>
                     <Route index element={<Dashboard />} />
                     <Route path="requests" element={<Requests />} />

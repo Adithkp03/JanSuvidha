@@ -27,7 +27,11 @@ export default function Shell({ workspace }) {
 
     const handleLogout = () => {
         logout();
-        navigate('/');
+        if (workspace === 'admin') {
+            navigate('/admin/login');
+        } else {
+            navigate('/');
+        }
     };
 
     const manualSync = async () => {
