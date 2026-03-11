@@ -321,10 +321,10 @@ const LoginForm = () => {
             <div id="recaptcha-citizen-container"></div>
 
             {/* Main Kiosk Container */}
-            <main className="z-10 w-full max-w-[750px] w-[95vw] sm:w-[90vw] md:w-full h-[95vh] sm:h-[90vh] md:h-full md:min-h-[950px] bg-white rounded-[2rem] md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative border-[8px] md:border-[12px] border-white">
+            <main className="z-10 w-full max-w-[750px] w-[95vw] sm:w-[90vw] md:w-full h-[95vh] sm:h-[90vh] md:h-[950px] bg-[#022c22] rounded-[2rem] md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative border-[8px] md:border-[12px] border-white">
 
                 {/* SECTION 1: The Organic Green Header */}
-                <section className="h-[45%] bg-[#022c22] p-8 md:p-14 flex flex-col justify-start relative">
+                <section className="h-[40%] bg-[#022c22] px-6 py-8 md:px-14 md:py-10 flex flex-col justify-start relative z-10 shrink-0">
 
                     {/* Top Utility Bar */}
                     <div className="relative z-30 w-full flex justify-between items-stretch mb-8 md:mb-16 opacity-95 text-white">
@@ -343,9 +343,9 @@ const LoginForm = () => {
                             </div>
                         </div>
 
-                        <div className="hidden sm:flex items-center gap-3 bg-white/10 px-6 rounded-full border border-white/10 backdrop-blur-sm h-12">
+                        <div className="hidden sm:flex items-center gap-2 md:gap-3 bg-white/10 px-4 md:px-6 rounded-full border border-white/10 backdrop-blur-sm h-12">
                             <Clock className="w-4 h-4 text-emerald-400" />
-                            <span className="text-[11px] font-black tracking-widest uppercase tabular-nums">{time}</span>
+                            <span className="text-[10px] md:text-[11px] font-black tracking-widest uppercase tabular-nums truncate max-w-[100px]">{time}</span>
                         </div>
                     </div>
 
@@ -364,43 +364,27 @@ const LoginForm = () => {
                         )}
                     </div>
 
-                    <div className="relative z-30 space-y-2 md:space-y-3">
-                        <h1 className="text-6xl md:text-8xl font-black text-white leading-none tracking-tighter">
+                    <div className="relative z-30 space-y-1 md:space-y-3 mt-2 md:mt-0">
+                        <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-white leading-none tracking-tighter drop-shadow-lg truncate">
                             {step === 1 ? t.hello : 'OTP'}
                         </h1>
-                        <p className="text-emerald-100/90 text-lg md:text-2xl font-bold tracking-tight">
+                        <p className="text-emerald-100/90 text-sm sm:text-base md:text-2xl font-bold tracking-tight pb-4">
                             {step === 1 ? t.welcome : 'Verification required'}
                         </p>
                     </div>
 
-                    {/* Organic Leaf Graphics */}
-                    <div className="absolute top-[-40px] left-[-40px] w-80 h-80 z-10 pointer-events-none opacity-20 overflow-hidden">
-                        <svg viewBox="0 0 200 200" className="w-full h-full">
-                            <path d="M0,0 Q100,0 120,80 Q140,160 60,180 Q0,200 0,100 Z" fill="#10b981" />
-                        </svg>
-                    </div>
+                    {/* Large Organic Offset Background Sphere */}
+                    <div className="absolute top-[-40px] left-[-40px] w-96 h-96 bg-[#064e3b] rounded-full z-10 pointer-events-none opacity-50 blur-xl"></div>
 
-                    {/* The Potted Plant Visual */}
-                    <div className="absolute right-0 md:right-12 bottom-[-15px] w-48 md:w-64 h-64 md:h-80 z-50 pointer-events-none flex flex-col items-center">
-                        <svg viewBox="0 0 120 200" className="w-full h-full drop-shadow-2xl overflow-visible">
-                            <ellipse cx="60" cy="185" rx="32" ry="10" fill="black" opacity="0.1" />
-                            <g className="animate-sway">
-                                <path d="M60,140 Q20,100 30,40 Q40,0 60,80 Z" fill="#059669" />
-                                <path d="M60,140 Q60,40 50,10 Q80,40 60,140" fill="#10b981" />
-                                <path d="M60,140 Q100,100 90,40 Q80,0 60,80 Z" fill="#059669" opacity="0.8" />
-                            </g>
-                            <path d="M40,140 L80,140 L75,180 L45,180 Z" fill="white" />
-                            <ellipse cx="60" cy="140" rx="20" ry="5" fill="#f1f5f9" />
-                            <path d="M45,180 Q60,190 75,180" fill="#cbd5e1" opacity="0.5" />
-                        </svg>
-                    </div>
+                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-transparent to-[#022c22]/50 z-10 pointer-events-none"></div>
+
                 </section>
 
                 {/* SECTION 2: Interaction Card */}
-                <section className="flex-1 bg-white flex flex-col rounded-t-[3rem] md:rounded-t-[4.5rem] relative z-20 px-8 md:px-14 pb-8 md:pb-14 pt-10 md:pt-16 -mt-12 shadow-[0_-40px_80px_rgba(0,0,0,0.06)] border-t border-white/20">
+                <section className="flex-1 bg-[#f8fafc] flex flex-col rounded-t-[2.5rem] md:rounded-t-[4.5rem] relative z-20 px-4 sm:px-6 md:px-14 pb-8 md:pb-14 pt-8 sm:pt-10 md:pt-14 mt-[-1.5rem] sm:mt-[-4rem] shadow-[0_-20px_40px_rgba(0,0,0,0.1)]">
 
-                    <div className="mb-6 md:mb-8">
-                        <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-3 md:mb-4 tracking-tighter">
+                    <div className="mb-6 md:mb-10 px-4 md:px-0">
+                        <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0f172a] mb-2 md:mb-4 tracking-tighter">
                             {step === 1 ? t.login : t.verifyOtp}
                         </h2>
                         <div className={`h-2 ${step === 1 ? 'w-16 bg-[#10b981]' : 'w-24 bg-emerald-600'} rounded-full transition-all duration-500`}></div>
@@ -414,20 +398,20 @@ const LoginForm = () => {
 
                     {step === 1 ? (
                         <form onSubmit={handleSendOtp} className="space-y-6 md:space-y-10 flex-1 flex flex-col z-30">
-                            <div>
+                            <div className="px-2 md:px-0">
                                 {/* Minimalist Tab Switcher */}
-                                <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-100 mb-8">
+                                <div className="flex bg-[#f1f5f9] p-2 md:p-3 rounded-[3rem] mb-8 sm:mb-10 md:mb-12 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-slate-200/50">
                                     <button
                                         type="button"
                                         onClick={() => setMethod('email')}
-                                        className={`flex-1 py-4 md:py-5 rounded-2xl text-[11px] font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'email' ? 'bg-white text-emerald-900 shadow-xl scale-[1.02]' : 'text-slate-400'}`}
+                                        className={`flex-1 py-4 sm:py-5 md:py-6 rounded-[2.5rem] text-[10px] sm:text-[11px] md:text-xs font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'email' ? 'bg-white text-[#0f172a] shadow-[0_4px_20px_rgba(0,0,0,0.05)] scale-[1.02]' : 'bg-transparent text-[#94a3b8] hover:text-[#64748b]'}`}
                                     >
                                         {t.email}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setMethod('sms')}
-                                        className={`flex-1 py-4 md:py-5 rounded-2xl text-[11px] font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'sms' ? 'bg-white text-emerald-900 shadow-xl scale-[1.02]' : 'text-slate-400'}`}
+                                        className={`flex-1 py-4 sm:py-5 md:py-6 rounded-[2.5rem] text-[10px] sm:text-[11px] md:text-xs font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'sms' ? 'bg-white text-[#0f172a] shadow-[0_4px_20px_rgba(0,0,0,0.05)] scale-[1.02]' : 'bg-transparent text-[#94a3b8] hover:text-[#64748b]'}`}
                                     >
                                         {t.phone}
                                     </button>
@@ -444,7 +428,7 @@ const LoginForm = () => {
                                             value={name}
                                             onChange={e => setName(e.target.value)}
                                             placeholder={t.fullName}
-                                            className="w-full bg-slate-50 border border-slate-100 pl-20 pr-10 py-7 rounded-[2.5rem] focus:bg-white focus:border-emerald-600 outline-none transition-all font-bold text-2xl text-slate-800 placeholder:text-slate-300 shadow-sm"
+                                            className="w-full bg-[#f1f5f9] border border-[#cbd5e1]/40 focus:bg-white focus:border-emerald-500 pl-16 sm:pl-20 pr-8 sm:pr-10 py-5 sm:py-6 md:py-8 rounded-[2rem] md:rounded-[3rem] outline-none transition-all font-bold text-lg sm:text-xl md:text-2xl text-slate-800 placeholder:text-[#94a3b8] placeholder:font-bold shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
                                         />
                                     </div>
 
@@ -457,16 +441,16 @@ const LoginForm = () => {
                                             value={method === 'email' ? email : phone}
                                             onChange={e => method === 'email' ? setEmail(e.target.value) : setPhone(e.target.value)}
                                             placeholder={t.idPlaceholder}
-                                            className="w-full bg-slate-50 border border-slate-100 pl-20 pr-10 py-7 rounded-[2.5rem] focus:bg-white focus:border-emerald-600 outline-none transition-all font-bold text-2xl text-slate-800 placeholder:text-slate-300 shadow-sm"
+                                            className="w-full bg-[#f1f5f9] border border-[#cbd5e1]/40 focus:bg-white focus:border-emerald-500 pl-16 sm:pl-20 pr-8 sm:pr-10 py-5 sm:py-6 md:py-8 rounded-[2rem] md:rounded-[3rem] outline-none transition-all font-bold text-lg sm:text-xl md:text-2xl text-slate-800 placeholder:text-[#94a3b8] placeholder:font-bold shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-auto pt-4 space-y-10">
-                                <button type="submit" disabled={loading} className="w-full bg-[#022c22] hover:bg-black text-white py-8 rounded-[2.5rem] font-black text-3xl active:scale-[0.98] transition-all flex items-center justify-center gap-5 shadow-2xl shadow-emerald-950/20 group disabled:opacity-70">
+                            <div className="mt-auto pt-6 sm:pt-8 space-y-4 sm:space-y-10 px-2 lg:px-0 pb-2">
+                                <button type="submit" disabled={loading} className="w-full bg-[#032e22] hover:bg-[#021f17] text-white py-5 sm:py-6 md:py-8 rounded-[2.5rem] md:rounded-[3rem] font-black text-xl sm:text-2xl md:text-3xl active:scale-[0.98] transition-all flex items-center justify-center gap-4 sm:gap-5 shadow-[0_10px_20px_rgba(2,44,34,0.1)] group disabled:opacity-70">
                                     {loading ? '...' : t.sendOtp}
-                                    <ArrowRight className="w-8 h-8 group-hover:translate-x-3 transition-transform" />
+                                    <ArrowRight className="w-6 md:w-8 h-6 md:h-8 group-hover:translate-x-3 transition-transform" />
                                 </button>
 
                                 {/* CONSOLIDATED OFFICIAL FOOTER */}
@@ -534,6 +518,22 @@ const LoginForm = () => {
                     )}
 
                 </section>
+
+                {/* The Potted Plant Visual - Restored overlapping z-index across both sections */}
+                <div className="absolute right-0 md:right-10 top-[28%] md:top-[20%] w-40 md:w-56 h-auto aspect-[120/200] z-[60] pointer-events-none flex flex-col items-center">
+                    <svg viewBox="0 0 120 200" className="w-full h-full drop-shadow-2xl overflow-visible">
+                        <ellipse cx="60" cy="185" rx="32" ry="10" fill="black" opacity="0.1" />
+                        <g className="animate-sway">
+                            <path d="M60,140 Q20,100 30,40 Q40,0 60,80 Z" fill="#059669" />
+                            <path d="M60,140 Q60,40 50,10 Q80,40 60,140" fill="#10b981" />
+                            <path d="M60,140 Q100,100 90,40 Q80,0 60,80 Z" fill="#059669" opacity="0.8" />
+                        </g>
+                        <path d="M40,140 L80,140 L75,180 L45,180 Z" fill="white" />
+                        <ellipse cx="60" cy="140" rx="20" ry="5" fill="#f1f5f9" />
+                        <path d="M45,180 Q60,190 75,180" fill="#cbd5e1" opacity="0.5" />
+                    </svg>
+                </div>
+
             </main>
 
 
