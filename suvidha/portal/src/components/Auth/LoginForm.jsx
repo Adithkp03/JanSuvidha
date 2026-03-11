@@ -313,7 +313,7 @@ const LoginForm = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#cbd5e1] text-slate-900 flex items-center justify-center font-sans p-0 md:p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-[#cbd5e1] text-slate-900 flex items-center justify-center font-sans p-4 md:p-6 relative overflow-hidden">
 
             {/* Background Layer */}
             <div className="fixed inset-0 z-0 bg-gradient-to-br from-slate-200 to-slate-400"></div>
@@ -321,13 +321,13 @@ const LoginForm = () => {
             <div id="recaptcha-citizen-container"></div>
 
             {/* Main Kiosk Container */}
-            <main className="z-10 w-full max-w-[750px] h-full min-h-[950px] bg-white md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative border-[12px] border-white">
+            <main className="z-10 w-full max-w-[750px] w-[95vw] sm:w-[90vw] md:w-full h-[95vh] sm:h-[90vh] md:h-full md:min-h-[950px] bg-white rounded-[2rem] md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative border-[8px] md:border-[12px] border-white">
 
                 {/* SECTION 1: The Organic Green Header */}
-                <section className="h-[45%] bg-[#022c22] p-14 flex flex-col justify-start relative">
+                <section className="h-[45%] bg-[#022c22] p-8 md:p-14 flex flex-col justify-start relative">
 
                     {/* Top Utility Bar */}
-                    <div className="relative z-30 w-full flex justify-between items-stretch mb-16 opacity-95 text-white">
+                    <div className="relative z-30 w-full flex justify-between items-stretch mb-8 md:mb-16 opacity-95 text-white">
                         <div className="flex items-stretch gap-4">
                             <div className="flex items-center gap-1 bg-white/10 p-1.5 rounded-full border border-white/10 backdrop-blur-md h-12">
                                 {languages.map((l) => (
@@ -343,7 +343,7 @@ const LoginForm = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-white/10 px-6 rounded-full border border-white/10 backdrop-blur-sm h-12">
+                        <div className="hidden sm:flex items-center gap-3 bg-white/10 px-6 rounded-full border border-white/10 backdrop-blur-sm h-12">
                             <Clock className="w-4 h-4 text-emerald-400" />
                             <span className="text-[11px] font-black tracking-widest uppercase tabular-nums">{time}</span>
                         </div>
@@ -364,11 +364,11 @@ const LoginForm = () => {
                         )}
                     </div>
 
-                    <div className="relative z-30 space-y-3">
-                        <h1 className="text-8xl font-black text-white leading-none tracking-tighter">
+                    <div className="relative z-30 space-y-2 md:space-y-3">
+                        <h1 className="text-6xl md:text-8xl font-black text-white leading-none tracking-tighter">
                             {step === 1 ? t.hello : 'OTP'}
                         </h1>
-                        <p className="text-emerald-100/90 text-2xl font-bold tracking-tight">
+                        <p className="text-emerald-100/90 text-lg md:text-2xl font-bold tracking-tight">
                             {step === 1 ? t.welcome : 'Verification required'}
                         </p>
                     </div>
@@ -381,7 +381,7 @@ const LoginForm = () => {
                     </div>
 
                     {/* The Potted Plant Visual */}
-                    <div className="absolute right-12 bottom-[-15px] w-64 h-80 z-50 pointer-events-none flex flex-col items-center">
+                    <div className="absolute right-0 md:right-12 bottom-[-15px] w-48 md:w-64 h-64 md:h-80 z-50 pointer-events-none flex flex-col items-center">
                         <svg viewBox="0 0 120 200" className="w-full h-full drop-shadow-2xl overflow-visible">
                             <ellipse cx="60" cy="185" rx="32" ry="10" fill="black" opacity="0.1" />
                             <g className="animate-sway">
@@ -397,10 +397,10 @@ const LoginForm = () => {
                 </section>
 
                 {/* SECTION 2: Interaction Card */}
-                <section className="flex-1 bg-white flex flex-col rounded-t-[4.5rem] relative z-20 px-14 pb-14 pt-16 -mt-12 shadow-[0_-40px_80px_rgba(0,0,0,0.06)] border-t border-white/20">
+                <section className="flex-1 bg-white flex flex-col rounded-t-[3rem] md:rounded-t-[4.5rem] relative z-20 px-8 md:px-14 pb-8 md:pb-14 pt-10 md:pt-16 -mt-12 shadow-[0_-40px_80px_rgba(0,0,0,0.06)] border-t border-white/20">
 
-                    <div className="mb-8">
-                        <h2 className="text-6xl font-black text-slate-900 mb-4 tracking-tighter">
+                    <div className="mb-6 md:mb-8">
+                        <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-3 md:mb-4 tracking-tighter">
                             {step === 1 ? t.login : t.verifyOtp}
                         </h2>
                         <div className={`h-2 ${step === 1 ? 'w-16 bg-[#10b981]' : 'w-24 bg-emerald-600'} rounded-full transition-all duration-500`}></div>
@@ -413,21 +413,21 @@ const LoginForm = () => {
                     )}
 
                     {step === 1 ? (
-                        <form onSubmit={handleSendOtp} className="space-y-10 flex-1 flex flex-col z-30">
+                        <form onSubmit={handleSendOtp} className="space-y-6 md:space-y-10 flex-1 flex flex-col z-30">
                             <div>
                                 {/* Minimalist Tab Switcher */}
                                 <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-100 mb-8">
                                     <button
                                         type="button"
                                         onClick={() => setMethod('email')}
-                                        className={`flex-1 py-5 rounded-2xl text-[11px] font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'email' ? 'bg-white text-emerald-900 shadow-xl scale-[1.02]' : 'text-slate-400'}`}
+                                        className={`flex-1 py-4 md:py-5 rounded-2xl text-[11px] font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'email' ? 'bg-white text-emerald-900 shadow-xl scale-[1.02]' : 'text-slate-400'}`}
                                     >
                                         {t.email}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setMethod('sms')}
-                                        className={`flex-1 py-5 rounded-2xl text-[11px] font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'sms' ? 'bg-white text-emerald-900 shadow-xl scale-[1.02]' : 'text-slate-400'}`}
+                                        className={`flex-1 py-4 md:py-5 rounded-2xl text-[11px] font-black tracking-[0.2em] transition-all duration-500 uppercase ${method === 'sms' ? 'bg-white text-emerald-900 shadow-xl scale-[1.02]' : 'text-slate-400'}`}
                                     >
                                         {t.phone}
                                     </button>
