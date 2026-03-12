@@ -313,7 +313,7 @@ const LoginForm = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#cbd5e1] text-slate-900 flex items-center justify-center font-sans p-0 md:p-6 relative overflow-hidden">
+        <div className={`min-h-[100dvh] bg-[#cbd5e1] text-slate-900 flex items-start md:items-center justify-center p-0 md:p-6 relative overflow-hidden ${lang === 'ML' ? 'font-malayalam' : 'font-sans'}`}>
 
             {/* Background Layer */}
             <div className="fixed inset-0 z-0 bg-gradient-to-br from-slate-200 to-slate-400"></div>
@@ -321,7 +321,7 @@ const LoginForm = () => {
             <div id="recaptcha-citizen-container"></div>
 
             {/* Main Kiosk Container */}
-            <main className="z-10 w-full max-w-[750px] h-[100dvh] md:h-full md:min-h-[950px] bg-[#022c22] border-0 md:border-[12px] border-white md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative">
+            <main className="z-10 w-full max-w-[750px] min-h-[100dvh] md:h-full md:min-h-[950px] bg-[#022c22] border-0 md:border-[12px] border-white md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative">
 
                 {/* SECTION 1: The Organic Green Header */}
                 <section className="h-[40%] md:h-[45%] bg-[#022c22] px-6 py-10 md:p-14 flex flex-col justify-start relative z-10 shrink-0">
@@ -329,7 +329,7 @@ const LoginForm = () => {
                     {/* Top Utility Bar */}
                     <div className="relative z-30 w-full flex justify-between items-stretch mb-8 md:mb-16 opacity-95 text-white">
                         <div className="flex items-stretch gap-4 max-w-[65%]">
-                            <div className="flex items-center gap-1 bg-white/10 p-1.5 rounded-full border border-white/10 backdrop-blur-md h-12 overflow-x-auto no-scrollbar">
+                            <div className="flex items-center gap-1 bg-white/10 p-1.5 rounded-full border border-white/10 backdrop-blur-md h-11 overflow-x-auto no-scrollbar">
                                 {languages.map((l) => (
                                     <button
                                         key={l.code}
@@ -522,7 +522,7 @@ const LoginForm = () => {
 
                 {/* The Potted Plant Visual - Anchored strictly to the 40/45% section breakpoint */}
                 <div className="absolute left-0 right-0 top-[40%] md:top-[45%] h-0 z-[60] pointer-events-none">
-                    <div className="absolute right-4 md:right-10 bottom-[-75px] md:bottom-[70px] w-48 md:w-64 h-auto aspect-[120/200] flex flex-col items-center">
+                    <div className="absolute right-4 md:right-10 bottom-[-15px] md:bottom-[70px] w-48 md:w-64 h-auto aspect-[120/200] flex flex-col items-center">
                         <svg viewBox="0 0 120 200" className="w-full h-full drop-shadow-2xl overflow-visible">
                             <ellipse cx="60" cy="185" rx="32" ry="10" fill="black" opacity="0.1" />
                             <g className="animate-sway">

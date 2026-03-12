@@ -27,18 +27,27 @@ import MobileUpload from './pages/MobileUpload';
 const queryClient = new QueryClient();
 
 export default function App() {
-    const { theme, largeFont, token, role } = useStore();
+    const { theme, largeFont, token, role, language } = useStore();
     const navigate = useNavigate();
 
     // Apply theme classes to body
     useEffect(() => {
-        document.body.className = `${theme === 'dark' ? 'bg-slate-900 text-white' : 'bg-civic-light text-slate-800'}`;
+        let baseClass = theme === 'dark' ? 'bg-slate-900 text-white' : 'bg-civic-light text-slate-800';
+
+        if (language === 'ml') {
+            baseClass += ' lang-ml';
+        } else {
+            baseClass += ' font-sans';
+        }
+
+        document.body.className = baseClass;
+
         if (largeFont) {
             document.body.classList.add('text-lg');
         } else {
             document.body.classList.remove('text-lg');
         }
-    }, [theme, largeFont]);
+    }, [theme, largeFont, language]);
 
     // Offline Sync heartbeat
     useEffect(() => {

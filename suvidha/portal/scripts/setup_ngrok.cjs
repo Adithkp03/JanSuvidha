@@ -12,11 +12,12 @@ exec('npx --yes ngrok config add-authtoken 3AcwXj9T5M3JSHE3aKcYACQoNxZ_7nfFazaNx
 
     // Windows taskkill
     exec('taskkill /f /im ngrok.exe', (err) => {
-        console.log("Starting new ngrok tunnel on port 3001...");
+        console.log("Starting new ngrok tunnel on port 3001 with static domain...");
 
-        const ngrokProcess = spawn('npx.cmd', ['--yes', 'ngrok', 'http', '3001'], {
+        const ngrokProcess = spawn('npx.cmd', ['--yes', 'ngrok', 'http', '--url=tetrapterous-tamara-towable.ngrok-free.dev', '--pooling-enabled', '3001'], {
             detached: true,
-            stdio: 'ignore'
+            stdio: 'ignore',
+            shell: true
         });
         ngrokProcess.unref();
 

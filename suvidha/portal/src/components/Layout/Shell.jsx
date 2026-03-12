@@ -54,7 +54,7 @@ export default function Shell({ workspace }) {
     };
 
     return (
-        <div className="min-h-screen flex flex-col font-sans bg-civic-light transition-all duration-300">
+        <div className="min-h-screen flex flex-col bg-civic-light transition-all duration-300">
 
             {/* Offline Bar */}
             {!isOnline && (

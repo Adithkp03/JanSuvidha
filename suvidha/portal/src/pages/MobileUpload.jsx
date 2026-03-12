@@ -95,7 +95,7 @@ export default function MobileUpload() {
 
     if (!token || !doc) {
         return (
-            <div className="min-h-[100dvh] bg-slate-50 flex items-center justify-center p-6 text-center font-sans">
+            <div className="min-h-[100dvh] bg-slate-50 flex items-center justify-center p-6 text-center">
                 <div className="bg-white p-8 rounded-3xl shadow-lg max-w-sm w-full border border-slate-100">
                     <XCircleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h1 className="text-xl font-bold text-slate-900 mb-2">{t('InvalidUploadLink')}</h1>
@@ -107,7 +107,7 @@ export default function MobileUpload() {
 
     if (expired) {
         return (
-            <div className="min-h-[100dvh] bg-slate-50 flex items-center justify-center p-6 text-center font-sans">
+            <div className="min-h-[100dvh] bg-slate-50 flex items-center justify-center p-6 text-center">
                 <div className="bg-white p-8 rounded-3xl shadow-lg max-w-sm w-full border-t-4 border-amber-500">
                     <ArrowPathIcon className="w-16 h-16 text-amber-500 mx-auto mb-4" />
                     <h1 className="text-xl font-bold text-slate-900 mb-2">{t('UploadExpired')}</h1>
@@ -119,7 +119,7 @@ export default function MobileUpload() {
 
     if (status === 'success') {
         return (
-            <div className="min-h-[100dvh] bg-emerald-50 flex items-center justify-center p-6 text-center font-sans">
+            <div className="min-h-[100dvh] bg-emerald-50 flex items-center justify-center p-6 text-center">
                 <div className="bg-white p-8 rounded-3xl shadow-lg max-w-sm w-full border-2 border-emerald-500">
                     <CheckCircleIcon className="w-20 h-20 text-emerald-500 mx-auto mb-6" />
                     <h1 className="text-2xl font-black text-slate-800 mb-3 tracking-tight">{t('DocReceivedTitle')}</h1>
@@ -130,7 +130,7 @@ export default function MobileUpload() {
     }
 
     return (
-        <div className="min-h-[100dvh] bg-slate-50 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="min-h-[100dvh] bg-slate-50 flex flex-col items-center justify-center p-4">
             <div className="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-xl w-full max-w-md border border-slate-100">
                 <div className="text-center mb-8">
                     <h1 className="text-xs font-black text-slate-400 tracking-[0.2em] uppercase mb-3">{t('SecureMobileUpload')}</h1>

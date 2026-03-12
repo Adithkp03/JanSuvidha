@@ -41,7 +41,8 @@ export default {
                 }
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                sans: ['Inter', 'Noto Serif Malayalam', 'system-ui', 'sans-serif'],
+                malayalam: ['Noto Serif Malayalam', 'system-ui', 'Work Sans', 'sans-serif'],
             }
         },
     },
