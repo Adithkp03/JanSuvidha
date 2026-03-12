@@ -313,7 +313,7 @@ const LoginForm = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#cbd5e1] text-slate-900 flex items-center justify-center font-sans p-4 md:p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-[#cbd5e1] text-slate-900 flex items-center justify-center font-sans p-0 md:p-6 relative overflow-hidden">
 
             {/* Background Layer */}
             <div className="fixed inset-0 z-0 bg-gradient-to-br from-slate-200 to-slate-400"></div>
@@ -321,21 +321,21 @@ const LoginForm = () => {
             <div id="recaptcha-citizen-container"></div>
 
             {/* Main Kiosk Container */}
-            <main className="z-10 w-full max-w-[750px] w-[95vw] sm:w-[90vw] md:w-full h-[95vh] sm:h-[90vh] md:h-[950px] bg-[#022c22] rounded-[2rem] md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative border-[8px] md:border-[12px] border-white">
+            <main className="z-10 w-full max-w-[750px] h-[100dvh] md:h-full md:min-h-[950px] bg-[#022c22] border-0 md:border-[12px] border-white md:rounded-[4rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col relative">
 
                 {/* SECTION 1: The Organic Green Header */}
-                <section className="h-[40%] bg-[#022c22] px-6 py-8 md:px-14 md:py-10 flex flex-col justify-start relative z-10 shrink-0">
+                <section className="h-[40%] md:h-[45%] bg-[#022c22] px-6 py-10 md:p-14 flex flex-col justify-start relative z-10 shrink-0">
 
                     {/* Top Utility Bar */}
                     <div className="relative z-30 w-full flex justify-between items-stretch mb-8 md:mb-16 opacity-95 text-white">
-                        <div className="flex items-stretch gap-4">
-                            <div className="flex items-center gap-1 bg-white/10 p-1.5 rounded-full border border-white/10 backdrop-blur-md h-12">
+                        <div className="flex items-stretch gap-4 max-w-[65%]">
+                            <div className="flex items-center gap-1 bg-white/10 p-1.5 rounded-full border border-white/10 backdrop-blur-md h-12 overflow-x-auto no-scrollbar">
                                 {languages.map((l) => (
                                     <button
                                         key={l.code}
                                         onClick={() => setLang(l.code)}
                                         type="button"
-                                        className={`px-3.5 h-full rounded-full text-[10px] font-black whitespace-nowrap transition-all flex items-center justify-center ${lang === l.code ? 'bg-white text-[#022c22] shadow-sm' : 'text-white/60 hover:text-white'}`}
+                                        className={`px-3.5 h-full rounded-full text-[10px] font-black whitespace-nowrap transition-all flex items-center justify-center shrink-0 ${lang === l.code ? 'bg-white text-[#022c22] shadow-sm' : 'text-white/60 hover:text-white'}`}
                                     >
                                         {l.label}
                                     </button>
@@ -343,15 +343,15 @@ const LoginForm = () => {
                             </div>
                         </div>
 
-                        <div className="hidden sm:flex items-center gap-2 md:gap-3 bg-white/10 px-4 md:px-6 rounded-full border border-white/10 backdrop-blur-sm h-12">
+                        <div className="flex items-center gap-2 md:gap-3 bg-white/10 px-4 md:px-6 rounded-full border border-white/10 backdrop-blur-sm h-12 shrink-0">
                             <Clock className="w-4 h-4 text-emerald-400" />
-                            <span className="text-[10px] md:text-[11px] font-black tracking-widest uppercase tabular-nums truncate max-w-[100px]">{time}</span>
+                            <span className="text-[10px] md:text-[11px] font-black tracking-widest uppercase tabular-nums">{time}</span>
                         </div>
                     </div>
 
                     {/* AI FEATURE BADGE */}
                     <div className="relative z-30 mb-6 flex justify-between items-center">
-                        <div className="inline-flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 px-5 py-2.5 rounded-2xl backdrop-blur-md animate-pulse-subtle">
+                        <div className="inline-flex items-center gap-2 md:gap-3 bg-emerald-400/10 border border-emerald-400/20 px-3 md:px-5 py-2 md:py-2.5 rounded-2xl backdrop-blur-md animate-pulse-subtle">
                             <Sparkles className="w-4 h-4 text-emerald-400" />
                             <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none">{t.aiFeature}</span>
                         </div>
@@ -364,27 +364,28 @@ const LoginForm = () => {
                         )}
                     </div>
 
-                    <div className="relative z-30 space-y-1 md:space-y-3 mt-2 md:mt-0">
-                        <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-white leading-none tracking-tighter drop-shadow-lg truncate">
+                    <div className="relative z-30 space-y-2 md:space-y-3 mt-auto md:mt-0">
+                        <h1 className="text-6xl md:text-8xl font-black text-white leading-none tracking-tighter drop-shadow-lg">
                             {step === 1 ? t.hello : 'OTP'}
                         </h1>
-                        <p className="text-emerald-100/90 text-sm sm:text-base md:text-2xl font-bold tracking-tight pb-4">
+                        <p className="text-emerald-100/90 text-lg md:text-2xl font-bold tracking-tight pb-4 md:pb-0">
                             {step === 1 ? t.welcome : 'Verification required'}
                         </p>
                     </div>
 
-                    {/* Large Organic Offset Background Sphere */}
-                    <div className="absolute top-[-40px] left-[-40px] w-96 h-96 bg-[#064e3b] rounded-full z-10 pointer-events-none opacity-50 blur-xl"></div>
-
-                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-transparent to-[#022c22]/50 z-10 pointer-events-none"></div>
-
+                    {/* Organic Background Elements */}
+                    <div className="absolute top-[-40px] left-[-40px] w-80 h-80 z-10 pointer-events-none opacity-20 overflow-hidden">
+                        <svg viewBox="0 0 200 200" className="w-full h-full">
+                            <path d="M0,0 Q100,0 120,80 Q140,160 60,180 Q0,200 0,100 Z" fill="#10b981" />
+                        </svg>
+                    </div>
                 </section>
 
                 {/* SECTION 2: Interaction Card */}
-                <section className="flex-1 bg-[#f8fafc] flex flex-col rounded-t-[2.5rem] md:rounded-t-[4.5rem] relative z-20 px-4 sm:px-6 md:px-14 pb-8 md:pb-14 pt-8 sm:pt-10 md:pt-14 mt-[-1.5rem] sm:mt-[-4rem] shadow-[0_-20px_40px_rgba(0,0,0,0.1)]">
+                <section className="flex-1 bg-white flex flex-col rounded-t-[3rem] md:rounded-t-[4.5rem] relative z-20 px-6 sm:px-8 md:px-14 pb-8 md:pb-14 pt-10 md:pt-16 -mt-8 md:-mt-12 shadow-[0_-40px_80px_rgba(0,0,0,0.06)] border-t border-white/20">
 
-                    <div className="mb-6 md:mb-10 px-4 md:px-0">
-                        <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0f172a] mb-2 md:mb-4 tracking-tighter">
+                    <div className="mb-6 md:mb-14 px-2 md:px-0">
+                        <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 mb-2 md:mb-4 tracking-tighter">
                             {step === 1 ? t.login : t.verifyOtp}
                         </h2>
                         <div className={`h-2 ${step === 1 ? 'w-16 bg-[#10b981]' : 'w-24 bg-emerald-600'} rounded-full transition-all duration-500`}></div>
@@ -519,19 +520,21 @@ const LoginForm = () => {
 
                 </section>
 
-                {/* The Potted Plant Visual - Restored overlapping z-index across both sections */}
-                <div className="absolute right-0 md:right-10 top-[28%] md:top-[20%] w-40 md:w-56 h-auto aspect-[120/200] z-[60] pointer-events-none flex flex-col items-center">
-                    <svg viewBox="0 0 120 200" className="w-full h-full drop-shadow-2xl overflow-visible">
-                        <ellipse cx="60" cy="185" rx="32" ry="10" fill="black" opacity="0.1" />
-                        <g className="animate-sway">
-                            <path d="M60,140 Q20,100 30,40 Q40,0 60,80 Z" fill="#059669" />
-                            <path d="M60,140 Q60,40 50,10 Q80,40 60,140" fill="#10b981" />
-                            <path d="M60,140 Q100,100 90,40 Q80,0 60,80 Z" fill="#059669" opacity="0.8" />
-                        </g>
-                        <path d="M40,140 L80,140 L75,180 L45,180 Z" fill="white" />
-                        <ellipse cx="60" cy="140" rx="20" ry="5" fill="#f1f5f9" />
-                        <path d="M45,180 Q60,190 75,180" fill="#cbd5e1" opacity="0.5" />
-                    </svg>
+                {/* The Potted Plant Visual - Anchored strictly to the 40/45% section breakpoint */}
+                <div className="absolute left-0 right-0 top-[40%] md:top-[45%] h-0 z-[60] pointer-events-none">
+                    <div className="absolute right-4 md:right-10 bottom-[-75px] md:bottom-[70px] w-48 md:w-64 h-auto aspect-[120/200] flex flex-col items-center">
+                        <svg viewBox="0 0 120 200" className="w-full h-full drop-shadow-2xl overflow-visible">
+                            <ellipse cx="60" cy="185" rx="32" ry="10" fill="black" opacity="0.1" />
+                            <g className="animate-sway">
+                                <path d="M60,140 Q20,100 30,40 Q40,0 60,80 Z" fill="#059669" />
+                                <path d="M60,140 Q60,40 50,10 Q80,40 60,140" fill="#10b981" />
+                                <path d="M60,140 Q100,100 90,40 Q80,0 60,80 Z" fill="#059669" opacity="0.8" />
+                            </g>
+                            <path d="M40,140 L80,140 L75,180 L45,180 Z" fill="white" />
+                            <ellipse cx="60" cy="140" rx="20" ry="5" fill="#f1f5f9" />
+                            <path d="M45,180 Q60,190 75,180" fill="#cbd5e1" opacity="0.5" />
+                        </svg>
+                    </div>
                 </div>
 
             </main>
@@ -553,6 +556,13 @@ const LoginForm = () => {
         }
         .animate-pulse-subtle {
           animation: pulse-subtle 3s infinite ease-in-out;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}} />
 
