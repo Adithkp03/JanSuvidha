@@ -3,8 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import FormRenderer from '../../components/FormRenderer';
 import DocumentUploader from '../../components/DocumentUploader';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 import api from '../../services/api';
 import useStore from '../../store/useStore';
+import useSpeakAloud from '../../hooks/useSpeakAloud';
 import { CheckCircleIcon, DocumentTextIcon, UserIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 
 export default function DynamicForm() {
@@ -20,6 +22,9 @@ export default function DynamicForm() {
     const [error, setError] = useState('');
     const [serviceData, setServiceData] = useState(state?.serviceData || null);
     const [loading, setLoading] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const seniorMode = useStore((s) => s.seniorMode);
+    const { speak } = useSpeakAloud();
 
     useEffect(() => {
         if (state?.serviceData) {
@@ -61,6 +66,25 @@ export default function DynamicForm() {
         : (serviceData.required_documents || []);
     const formSchema = serviceData.form_schema || [];
 
+    // Auto read-aloud on step change
+    useEffect(() => {
+        if (!seniorMode) return;
+        const labels = { 1: t('FillDetails'), 2: t('UploadDocs'), 3: t('ReviewAndSubmit') };
+        let contentToRead = `${t(serviceData?.name || '')}. Step ${step}: ${labels[step] || ''}. `;
+        
+        if (step === 1 && formSchema.length > 0) {
+            const fields = formSchema.map(f => t(f.label)).join(", ");
+            contentToRead += `Please fill in the following fields: ${fields}.`;
+        } else if (step === 2 && docsRequired.length > 0) {
+            const docs = docsRequired.map(d => d.replace(/_/g, ' ')).join(", ");
+            contentToRead += `Please upload the following required documents: ${docs}.`;
+        } else if (step === 3) {
+            contentToRead += `Please review your application details below and click Submit Securely to proceed.`;
+        }
+        
+        speak(contentToRead);
+    }, [step, seniorMode, serviceData, formSchema, docsRequired, speak, t]);
+
     const handleFormSubmit = (data) => {
         setFormData(data);
         if (docsRequired.length > 0) {
@@ -92,7 +116,16 @@ export default function DynamicForm() {
         setStep(3);
     };
 
+    const handleSubmitClick = () => {
+        if (seniorMode) {
+            setShowConfirm(true);
+        } else {
+            submitApplication();
+        }
+    };
+
     const submitApplication = async () => {
+        setShowConfirm(false);
         setSubmitting(true);
         setError('');
 
@@ -154,7 +187,14 @@ export default function DynamicForm() {
     const activeStepIndex = steps.findIndex(s => s.num === step);
 
     return (
-        <div className="max-w-5xl mx-auto py-8 lg:py-12 px-4 sm:px-6">
+        <>
+            {showConfirm && (
+                <ConfirmationDialog
+                    onConfirm={submitApplication}
+                    onCancel={() => setShowConfirm(false)}
+                />
+            )}
+            <div className="max-w-5xl mx-auto py-8 lg:py-12 px-4 sm:px-6">
 
             {/* Context Header */}
             <div className="mb-10 text-center">
@@ -339,7 +379,7 @@ export default function DynamicForm() {
                                 </p>
                                 <button
                                     disabled={submitting}
-                                    onClick={submitApplication}
+                                    onClick={handleSubmitClick}
                                     className="w-full sm:w-auto px-10 py-5 bg-emerald-500 text-white font-black text-xl rounded-2xl shadow-lg hover:bg-emerald-400 hover:shadow-emerald-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 relative z-10"
                                 >
                                     {submitting ? (
@@ -359,6 +399,7 @@ export default function DynamicForm() {
                     )}
                 </div>
             </div>
-        </div>
+            </div>
+        </>
     );
 }

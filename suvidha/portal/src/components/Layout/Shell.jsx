@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useStore from '../../store/useStore';
 import LanguageSelector from '../LanguageSelector';
-import { UserCircleIcon, ArrowRightOnRectangleIcon, ArrowPathIcon, BellIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, ArrowRightOnRectangleIcon, ArrowPathIcon, BellIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { syncQueue } from '../../utils/offlineSync';
+import useIdleTimer from '../../hooks/useIdleTimer';
+import IdleOverlay from '../IdleOverlay';
 
 export default function Shell({ workspace }) {
     const { t } = useTranslation();
-    const { user, logout, offlineQueue } = useStore();
+    const { user, logout, offlineQueue, seniorMode, setSeniorMode } = useStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [syncing, setSyncing] = useState(false);
+    const [showIdleWarning, setShowIdleWarning] = useState(false);
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -25,14 +28,37 @@ export default function Shell({ workspace }) {
         };
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         logout();
         if (workspace === 'admin') {
             navigate('/admin/login');
         } else {
             navigate('/');
         }
-    };
+    }, [logout, navigate, workspace]);
+
+    // --- Kiosk Idle Timer (citizen workspace only) ---
+    const handleIdleWarning = useCallback(() => {
+        setShowIdleWarning(true);
+    }, []);
+
+    const handleIdleTimeout = useCallback(() => {
+        setShowIdleWarning(false);
+        handleLogout();
+    }, [handleLogout]);
+
+    const { resetTimer } = useIdleTimer({
+        warningSeconds: 45,
+        idleSeconds: 60,
+        onWarning: handleIdleWarning,
+        onIdle: handleIdleTimeout,
+        enabled: workspace === 'citizen',
+    });
+
+    const handleIdleDismiss = useCallback(() => {
+        setShowIdleWarning(false);
+        resetTimer();
+    }, [resetTimer]);
 
     const manualSync = async () => {
         setSyncing(true);
@@ -55,6 +81,14 @@ export default function Shell({ workspace }) {
 
     return (
         <div className="min-h-screen flex flex-col bg-civic-light transition-all duration-300">
+
+            {/* Kiosk Idle Warning Overlay */}
+            {showIdleWarning && (
+                <IdleOverlay
+                    onDismiss={handleIdleDismiss}
+                    onTimeout={handleIdleTimeout}
+                />
+            )}
 
             {/* Offline Bar */}
             {!isOnline && (
@@ -111,6 +145,17 @@ export default function Shell({ workspace }) {
                             <div className="hidden sm:flex items-center gap-1">
                                 {/* Accessibility removed per request */}
                             </div>
+
+                            {workspace !== 'admin' && (
+                                <button
+                                    onClick={() => setSeniorMode(!seniorMode)}
+                                    className={`senior-toggle-btn ${seniorMode ? 'active' : ''}`}
+                                    title={seniorMode ? t('SeniorModeOff') : t('SeniorModeOn')}
+                                >
+                                    <HeartIcon className="senior-toggle-icon" />
+                                    <span className="hidden sm:inline">{t('SeniorMode')}</span>
+                                </button>
+                            )}
 
                             <div className="block">
                                 <LanguageSelector />

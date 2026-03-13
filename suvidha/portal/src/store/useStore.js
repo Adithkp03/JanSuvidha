@@ -17,6 +17,7 @@ const useStore = create(
             theme: 'light', // light, dark, high-contrast
             language: 'en',
             largeFont: false,
+            seniorMode: false,
 
             // Offline Queue
             offlineQueue: [],
@@ -29,6 +30,7 @@ const useStore = create(
             setTheme: (theme) => set({ theme }),
             setLanguage: (language) => set({ language }),
             toggleLargeFont: () => set((state) => ({ largeFont: !state.largeFont })),
+            setSeniorMode: (seniorMode) => set({ seniorMode }),
 
             rotateRequestId: () => set({ requestId: generateUUID() }),
 
@@ -47,7 +49,8 @@ const useStore = create(
                 role: state.role,
                 theme: state.theme,
                 language: state.language,
-                largeFont: state.largeFont
+                largeFont: state.largeFont,
+                seniorMode: state.seniorMode
             }),
         }
     )

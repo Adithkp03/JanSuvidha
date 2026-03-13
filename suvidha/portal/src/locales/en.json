@@ -454,5 +454,13 @@
   "UseDifferentPhoto": "Use a different photo",
   "OfficialSecureConnection": "Official Secure Connection",
   "E2ETransfer": "End-to-end encrypted transfer",
-  "UploadFailedRetry": "Upload failed. Please try again."
+  "UploadFailedRetry": "Upload failed. Please try again.",
+  "SeniorMode": "Senior Mode",
+  "SeniorModeOn": "Enable Senior Citizen Mode",
+  "SeniorModeOff": "Disable Senior Citizen Mode",
+  "ConfirmTitle": "Are you sure?",
+  "ConfirmDesc": "Please confirm that you want to proceed with this action.",
+  "ConfirmYes": "Yes, Continue",
+  "ConfirmNo": "Go Back",
+  "Rupees": "Rupees"
 }

@@ -7,6 +7,7 @@ import { saveOfflineItem, getOfflineItem } from '../../utils/offlineSync';
 import AIHelper from '../../components/AIHelper';
 import DepartmentGrid from '../../components/DepartmentGrid';
 import ServiceCard from '../../components/ServiceCard';
+import useSpeakAloud from '../../hooks/useSpeakAloud';
 import { ArrowLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 const FALLBACK_SERVICES = {
@@ -70,6 +71,30 @@ export default function StartFlow() {
     const [loadingServices, setLoadingServices] = useState(false);
 
     const navigate = useNavigate();
+    const seniorMode = useStore((s) => s.seniorMode);
+    const { speak } = useSpeakAloud();
+
+    // Auto read-aloud on mount
+    useEffect(() => {
+        if (seniorMode) {
+            if (!selectedDept) {
+                const depts = "Electricity, Gas Utility, Water Supply, Municipal, Waste Management, Public Works, Emergency";
+                speak(`${t('HowCanWeHelpYou')} ${t('AIDescription')} ${t('BrowseDepartments')}. ${t('BrowseDepartmentsDesc')} ${depts}`);
+            }
+        }
+    }, [seniorMode, selectedDept, speak, t]);
+
+    // Auto read-aloud on department selection
+    useEffect(() => {
+        if (seniorMode && selectedDept) {
+            if (services.length > 0) {
+                 const serviceNames = services.map(s => t(s.name)).join(", ");
+                 speak(`${t(selectedDept.name)}. ${services.length} ${t('Available')}. ${t('SelectCategory')}. ${serviceNames}`);
+            } else if (!loadingServices) {
+                 speak(`${t(selectedDept.name)}. ${t('NoServicesFound')}`);
+            }
+        }
+    }, [selectedDept, seniorMode, services, loadingServices, speak, t]);
 
     useEffect(() => {
         if (!selectedDept) {

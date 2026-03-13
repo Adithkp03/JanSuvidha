@@ -27,7 +27,7 @@ import MobileUpload from './pages/MobileUpload';
 const queryClient = new QueryClient();
 
 export default function App() {
-    const { theme, largeFont, token, role, language } = useStore();
+    const { theme, largeFont, token, role, language, seniorMode } = useStore();
     const navigate = useNavigate();
 
     // Apply theme classes to body
@@ -40,6 +40,10 @@ export default function App() {
             baseClass += ' font-sans';
         }
 
+        if (seniorMode) {
+            baseClass += ' senior-mode';
+        }
+
         document.body.className = baseClass;
 
         if (largeFont) {
@@ -47,7 +51,7 @@ export default function App() {
         } else {
             document.body.classList.remove('text-lg');
         }
-    }, [theme, largeFont, language]);
+    }, [theme, largeFont, language, seniorMode]);
 
     // Offline Sync heartbeat
     useEffect(() => {

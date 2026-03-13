@@ -53,3 +53,469 @@
         @apply bg-gradient-to-br from-primary-600 to-secondary-700 text-white;
     }
 }
+
+/* ===== Kiosk Idle Overlay ===== */
+
+.idle-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 44, 34, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    animation: idle-fade-in 0.4s ease-out;
+    cursor: pointer;
+}
+
+.idle-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.idle-particle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.3), transparent 70%);
+    animation: idle-float 8s infinite ease-in-out;
+}
+.idle-particle-1 { width: 300px; height: 300px; top: -80px; left: -60px; animation-delay: 0s; }
+.idle-particle-2 { width: 200px; height: 200px; bottom: 10%; right: -40px; animation-delay: -2s; }
+.idle-particle-3 { width: 150px; height: 150px; top: 40%; left: 15%; animation-delay: -4s; }
+.idle-particle-4 { width: 250px; height: 250px; bottom: -60px; left: 50%; animation-delay: -1s; }
+.idle-particle-5 { width: 100px; height: 100px; top: 20%; right: 20%; animation-delay: -3s; }
+.idle-particle-6 { width: 180px; height: 180px; top: 60%; right: 30%; animation-delay: -5s; }
+
+.idle-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 3rem 3rem 2rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2.5rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
+    animation: idle-scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 400px;
+    width: 90%;
+}
+
+/* Countdown ring */
+.idle-ring-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.idle-ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.idle-ring-progress {
+    transition: stroke-dashoffset 1s linear;
+}
+
+.idle-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.idle-seconds {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+.idle-sec-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-top: 2px;
+}
+
+/* Messaging */
+.idle-message {
+    text-align: center;
+}
+
+.idle-title {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.idle-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.idle-subtitle strong {
+    color: #10b981;
+    font-weight: 800;
+}
+
+/* Dismiss button */
+.idle-dismiss-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1.25rem 2rem;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    animation: idle-btn-pulse 2s infinite ease-in-out;
+}
+
+.idle-dismiss-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+}
+
+.idle-dismiss-btn:active {
+    transform: scale(0.97);
+}
+
+.idle-btn-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Footer */
+.idle-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.4;
+}
+
+.idle-footer-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #fff;
+}
+
+.idle-footer span {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+/* Touch hint */
+.idle-touch-hint {
+    position: relative;
+    z-index: 1;
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+    animation: idle-hint-pulse 2.5s infinite ease-in-out;
+}
+
+/* ===== Animations ===== */
+
+@keyframes idle-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes idle-scale-in {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes idle-float {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+    25%      { transform: translate(30px, -20px) scale(1.1); opacity: 0.5; }
+    50%      { transform: translate(-20px, 30px) scale(0.95); opacity: 0.4; }
+    75%      { transform: translate(15px, 15px) scale(1.05); opacity: 0.35; }
+}
+
+@keyframes idle-btn-pulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3); }
+    50%      { box-shadow: 0 8px 40px rgba(16, 185, 129, 0.5); }
+}
+
+@keyframes idle-hint-pulse {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 0.6; }
+}
+
+/* ===== Confirmation Dialog ===== */
+
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    animation: idle-fade-in 0.3s ease-out;
+}
+
+.confirm-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 3rem 2.5rem 2.5rem;
+    background: #fff;
+    border-radius: 2rem;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+    max-width: 480px;
+    width: 90%;
+    animation: idle-scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+}
+
+.confirm-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #bbf7d0;
+}
+
+.confirm-icon {
+    width: 40px;
+    height: 40px;
+    color: #16a34a;
+}
+
+.confirm-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.confirm-message {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.confirm-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.confirm-btn-yes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1.25rem 2rem;
+    min-height: 70px;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 1.25rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.3);
+}
+
+.confirm-btn-yes:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 28px rgba(22, 163, 74, 0.4);
+}
+
+.confirm-btn-no {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1rem 2rem;
+    min-height: 60px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: 2px solid #e2e8f0;
+    border-radius: 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.confirm-btn-no:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.confirm-btn-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* ===== Senior Citizen Mode ===== */
+
+body.senior-mode {
+    font-size: 20px !important;
+    line-height: 1.6 !important;
+}
+
+/* Only modify texts that are normally greyish for better contrast */
+body.senior-mode .text-slate-400,
+body.senior-mode .text-slate-500,
+body.senior-mode .text-slate-600,
+body.senior-mode .text-gray-400,
+body.senior-mode .text-gray-500 {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+/* Thicker borders for main cards and removing opacity */
+body.senior-mode .glass-card,
+body.senior-mode .glass-panel {
+    border: 3px solid #94a3b8 !important;
+    backdrop-filter: none !important;
+    background-color: #ffffff !important;
+}
+
+/* Enhance form inputs outside of dark headers (like AI Helper) */
+body.senior-mode .glass-card input,
+body.senior-mode .glass-card select,
+body.senior-mode .glass-card textarea {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    padding: 1rem 1.25rem !important;
+    border: 3px solid #64748b !important;
+    color: #0f172a !important;
+    margin-bottom: 0.5rem;
+}
+
+/* Provide more spacing to buttons inside cards, without ruining custom UI buttons */
+body.senior-mode .glass-card button:not(.confirm-btn-yes):not(.confirm-btn-no):not(.icon-btn) {
+    min-height: 50px;
+    border-width: 2px !important;
+}
+
+/* Keep department/service card borders distinct */
+body.senior-mode .group.border-b {
+    border: 3px solid #cbd5e1 !important;
+}
+body.senior-mode .group.border-b:hover {
+    border-color: #64748b !important;
+}
+
+/* Larger headings */
+body.senior-mode h1 { font-size: 2.2rem !important; }
+body.senior-mode h2 { font-size: 1.8rem !important; }
+body.senior-mode h3 { font-size: 1.5rem !important; }
+
+/* Stepper dots */
+body.senior-mode .w-14.h-14 {
+    width: 4rem !important;
+    height: 4rem !important;
+}
+
+/* Senior mode toggle  */
+.senior-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.senior-toggle-btn.active {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+    box-shadow: 0 0 0 3px rgba(252, 211, 77, 0.2);
+}
+
+.senior-toggle-btn:not(.active) {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.senior-toggle-btn:not(.active):hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.senior-toggle-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Confirmation dialog in senior mode: even larger */
+body.senior-mode .confirm-title {
+    font-size: 2rem !important;
+}
+
+body.senior-mode .confirm-message {
+    font-size: 1.25rem !important;
+}
+
+body.senior-mode .confirm-btn-yes {
+    min-height: 80px !important;
+    font-size: 1.35rem !important;
+}
+
+body.senior-mode .confirm-btn-no {
+    min-height: 70px !important;
+    font-size: 1.25rem !important;
+}
