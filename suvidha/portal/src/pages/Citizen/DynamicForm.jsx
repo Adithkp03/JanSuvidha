@@ -13,6 +13,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Loader2, X, Accessibility, User, LogOut } from 'lucide-react';
 import AppLogo from '@/assets/logo.png';
 import { appendCitizenSubmission } from '../../utils/citizenBridge';
+import { generateSubmissionToken } from '../../utils/submissionToken';
 
 export default function DynamicForm() {
     const { t } = useTranslation();
@@ -156,6 +157,9 @@ export default function DynamicForm() {
         setSubmitting(true);
         setError('');
 
+        const submissionToken = generateSubmissionToken();
+        const formPayload = { ...formData, submission_token: submissionToken };
+
         const documentsPayload = Object.values(uploadedDocs).map(d => ({
             key: d.object_key,
             doc_type: d.doc_type,
@@ -167,7 +171,7 @@ export default function DynamicForm() {
             department: serviceData.department,
             service_type: serviceData.service_type,
             payload: {
-                ...formData,
+                ...formPayload,
                 documents: documentsPayload,
                 user_email: user?.email || ''
             }
@@ -178,15 +182,16 @@ export default function DynamicForm() {
             try {
                 const entry = {
                     id: bridgeId,
+                    submission_token: submissionToken,
                     department: serviceData.department,
                     service_type: serviceData.service_type,
                     service_name: serviceData.name || serviceData.service_type,
-                    applicant_name: formData.full_name || formData.applicant_name || formData.child_name || formData.owner_name || user?.name || 'Citizen',
-                    phone: formData.phone || formData.mobile_number || 'N/A',
+                    applicant_name: formPayload.full_name || formPayload.applicant_name || formPayload.child_name || formPayload.owner_name || user?.name || 'Citizen',
+                    phone: formPayload.phone || formPayload.mobile_number || 'N/A',
                     user_email: user?.email || '',
                     status: extraStatus,
                     created_at: new Date().toISOString(),
-                    payload: formData,
+                    payload: formPayload,
                     documents: documentsPayload,
                 };
                 appendCitizenSubmission(entry);
@@ -196,7 +201,11 @@ export default function DynamicForm() {
         };
 
         try {
-            const reqPayload = { department: serviceData.department, service_type: serviceData.service_type, payload: formData };
+            const reqPayload = {
+                department: serviceData.department,
+                service_type: serviceData.service_type,
+                payload: formPayload,
+            };
             const resp = await api.post('/requests', reqPayload);
             const reqId = resp.data.id;
 
@@ -215,7 +224,7 @@ export default function DynamicForm() {
             // Save to cross-session bridge for admin visibility
             saveToCrossBridge(reqId, 'submitted');
 
-            navigate(`/citizen/payment/${reqId}`, { replace: true });
+            navigate(`/citizen/payment/${reqId}`, { replace: true, state: { submissionToken } });
         } catch (err) {
             console.error(err);
             // Always save to cross-session bridge + offline queue on any failure
@@ -225,7 +234,7 @@ export default function DynamicForm() {
 
             if (err.offline || !err.response) {
                 // True offline or network failure — navigate to draft receipt
-                navigate(`/citizen/receipt/${id}`, { replace: true, state: { offline: true } });
+                navigate(`/citizen/receipt/${id}`, { replace: true, state: { offline: true, submissionToken } });
             } else {
                 // Server returned an error (4xx/5xx) — still queued, but show error
                 setError(err.response?.data?.error || 'Submission queued. Will be synced when the server is available.');

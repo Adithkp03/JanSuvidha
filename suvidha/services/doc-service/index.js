@@ -175,6 +175,40 @@ app.post("/documents/upload", async (req, reply) => {
   }
 });
 
+// Same-origin proxy: browsers cannot open presigned URLs that point at internal hostnames (e.g. minio:9002).
+app.get("/documents/:key/stream", async (req, reply) => {
+  const objectKey = decodeURIComponent(req.params.key);
+  await ensureBucket();
+  try {
+    const stat = await minio.statObject(BUCKET, objectKey);
+    const stream = await minio.getObject(BUCKET, objectKey);
+    const ext = objectKey.split(".").pop()?.toLowerCase() || "";
+    const extMime = {
+      png: "image/png",
+      jpg: "image/jpg",
+      jpeg: "image/jpeg",
+      gif: "image/gif",
+      webp: "image/webp",
+      pdf: "application/pdf",
+    };
+    const mime =
+      stat.metaData?.["content-type"] ||
+      stat.metaData?.["Content-Type"] ||
+      extMime[ext] ||
+      "application/octet-stream";
+    const safeName = objectKey.split("/").pop() || "document";
+    reply.header("Content-Type", mime);
+    reply.header(
+      "Content-Disposition",
+      `inline; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+    );
+    return reply.send(stream);
+  } catch (err) {
+    app.log.error({ err, objectKey }, "Stream failed");
+    reply.code(404).send({ error: "not_found", code: "document_not_found" });
+  }
+});
+
 app.get("/documents/:key/signed-url", async (req, reply) => {
   const { key } = req.params;
   const objectKey = key;

@@ -41,6 +41,11 @@ export default function RequestRow({ request, isSelected, toggleSelect, onAction
 
                 {/* ID & Dept Info */}
                 <div className="w-1/4 min-w-[200px] flex flex-col pr-4">
+                    {request.submission_token && (
+                        <span className="text-[10px] font-black font-mono text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md mb-1 w-fit">
+                            {request.submission_token}
+                        </span>
+                    )}
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-extrabold text-slate-900 tracking-tight font-mono whitespace-nowrap">
                             {request.id || request.receipt_number || 'REQ-UNKNOWN'}

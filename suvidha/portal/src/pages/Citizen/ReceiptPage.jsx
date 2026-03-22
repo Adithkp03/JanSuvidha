@@ -41,5 +41,11 @@ export default function ReceiptPage() {
 
     if (loading) return <div className="text-center py-20 text-slate-500 font-medium">{t('FetchingReceipt')}</div>;
 
-    return <Receipt requestData={requestData} isOffline={isOffline} />;
+    return (
+        <Receipt
+            requestData={requestData}
+            isOffline={isOffline}
+            submissionToken={location.state?.submissionToken}
+        />
+    );
 }

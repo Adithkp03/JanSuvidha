@@ -10,6 +10,7 @@ import AnalyticsPanel from '../../components/Admin/AnalyticsPanel';
 import LiveRequestsTable from '../../components/Admin/LiveRequestsTable';
 import RequestDetailModal from '../../components/Admin/RequestDetailModal';
 import seedData from '../../../seed/admin-seed.json'; // Fallback demo data
+import { normalizeRequestRow } from '../../utils/normalizeRequestRow';
 
 export default function AdminDashboard() {
     const queryClient = useQueryClient();
@@ -56,16 +57,12 @@ export default function AdminDashboard() {
                         service_name: item.payload?.service_type || item.payload?.service_name || 'General Request',
                         applicant_name: item.payload?.payload?.applicant_name || item.payload?.payload?.name || 'Local User',
                         phone: item.payload?.payload?.phone || item.payload?.payload?.mobile_number || 'N/A',
+                        submission_token: item.payload?.payload?.submission_token,
                         status: 'pending',
                         created_at: new Date().toISOString(),
                         intent_confidence: 0.99,
                         payload: item.payload?.payload,
-                        documents: item.payload?.payload?.documents?.map(d => ({
-                            doc_type: d.doc_type,
-                            filename: d.filename,
-                            url: d.key || '#',
-                            validation_status: 'UNCLEAR'
-                        }))
+                        documents: item.payload?.payload?.documents || item.payload?.documents,
                     }));
 
                 // Read cross-session citizen submissions from localStorage
@@ -74,7 +71,8 @@ export default function AdminDashboard() {
                     crossSessionSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]');
                 } catch { /* ignore */ }
 
-                let docs = [...crossSessionSubs, ...localSubmissions, ...seedData.requests];
+                crossSessionSubs = crossSessionSubs.map((r) => normalizeRequestRow(r));
+                let docs = [...crossSessionSubs, ...localSubmissions.map((r) => normalizeRequestRow(r)), ...seedData.requests.map((r) => normalizeRequestRow(r))];
                 // Deduplicate by id
                 const seen = new Set();
                 docs = docs.filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; });
@@ -82,7 +80,14 @@ export default function AdminDashboard() {
                 if (filters.department) docs = docs.filter(r => r.department.toLowerCase().includes(filters.department.toLowerCase()));
                 if (filters.status) docs = docs.filter(r => r.status === filters.status);
                 if (filters.priority) docs = docs.filter(r => calculatePriority(r).priority === filters.priority);
-                if (filters.search) docs = docs.filter(r => (r.id + (r.applicant_name || '')).toLowerCase().includes(filters.search.toLowerCase()));
+                if (filters.search) {
+                    const q = filters.search.toLowerCase();
+                    docs = docs.filter((r) =>
+                        `${r.id || ''} ${r.applicant_name || ''} ${r.phone || ''} ${r.submission_token || ''}`
+                            .toLowerCase()
+                            .includes(q)
+                    );
+                }
 
                 // Enhance seed data with dynamic priority/flags immediately
                 docs = docs.map(r => {
@@ -118,6 +123,7 @@ export default function AdminDashboard() {
     };
 
     const selectedRequest = requestsData?.data?.find(r => r.id === selectedRequestId);
+    const selectedRequestNormalized = selectedRequest ? normalizeRequestRow(selectedRequest) : null;
 
     return (
         <div className="flex flex-col gap-8 w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -211,7 +217,7 @@ export default function AdminDashboard() {
             <RequestDetailModal
                 isOpen={!!selectedRequestId}
                 onClose={() => setSelectedRequestId(null)}
-                request={selectedRequest}
+                request={selectedRequestNormalized}
                 onApprove={(id) => { handleAction('approve', id); setSelectedRequestId(null); }}
                 onReject={(id, reason) => { handleAction('reject', id, reason); setSelectedRequestId(null); }}
                 onTriggerPayment={(id) => alert(`Triggering payment gateway for ${id}...`)}

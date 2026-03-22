@@ -47,7 +47,9 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
                 filteredItems = filteredItems.filter(
                     (r) =>
                         (r.id || '').toLowerCase().includes(q) ||
-                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
+                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q)) ||
+                        (r.phone && String(r.phone).toLowerCase().includes(q)) ||
+                        (r.submission_token && r.submission_token.toLowerCase().includes(q))
                 );
             }
 

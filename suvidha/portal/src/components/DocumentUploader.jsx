@@ -16,8 +16,21 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc,
     const [qrExpiresAt, setQrExpiresAt] = useState(0);
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
     const [mode, setMode] = useState('qr'); // 'qr' or 'local'
-    const [ngrokOverride, setNgrokOverride] = useState('');  // manual ngrok URL override
-    const [tunnelAlive, setTunnelAlive] = useState(null); // null=unknown, true=alive, false=dead
+    /** Runtime URL for QR (from public/jansuvidha-qr-base.json — update when ngrok URL changes; no rebuild). */
+    const [qrPublicBaseOverride, setQrPublicBaseOverride] = useState(null);
+
+    useEffect(() => {
+        const path = `${import.meta.env.BASE_URL || '/'}jansuvidha-qr-base.json`.replace(/\/{2,}/g, '/');
+        fetch(path, { cache: 'no-store' })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+                const u = data?.publicBaseUrl?.trim?.();
+                if (u && /^https?:\/\//i.test(u)) {
+                    setQrPublicBaseOverride(u.replace(/\/$/, ''));
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     // Broadcast channel for local testing (mocking cross-device communication via backend)
     useEffect(() => {
@@ -46,16 +59,6 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc,
             generateNewToken();
         }
     }, [docModel, mode, uploadToken]);
-
-    // Probe ngrok tunnel health once on mount
-    useEffect(() => {
-        const envUrl = import.meta.env.VITE_PUBLIC_BASE_URL;
-        if (envUrl && envUrl.includes('ngrok')) {
-            fetch(envUrl, { method: 'HEAD', mode: 'no-cors' })
-                .then(() => setTunnelAlive(true))
-                .catch(() => setTunnelAlive(false));
-        }
-    }, []);
 
     // Timer countdown
     useEffect(() => {
@@ -192,24 +195,23 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc,
         );
     }
 
-    // QR URL Generation for Scanner
+    // Priority: public/jansuvidha-qr-base.json (runtime) > VITE_PUBLIC_BASE_URL > page origin when not localhost
     const getBaseUrl = () => {
-        // Priority: manual override > env variable > window location
-        if (ngrokOverride && ngrokOverride.startsWith('http')) return ngrokOverride.replace(/\/$/, '');
-        const envUrl = import.meta.env.VITE_PUBLIC_BASE_URL;
-        if (envUrl && envUrl.includes('ngrok')) return envUrl;
-
-        const host = window.location.hostname;
-        if (host === 'localhost' || host === '127.0.0.1') {
-            return `http://${window.location.host}`;
+        if (qrPublicBaseOverride) return qrPublicBaseOverride;
+        const raw = (import.meta.env.VITE_PUBLIC_BASE_URL || '').trim().replace(/^['"]|['"]$/g, '');
+        if (/^https?:\/\//i.test(raw)) {
+            return raw.replace(/\/$/, '');
         }
-        return window.location.origin;
+        const host = window.location.hostname;
+        const isLoopback = host === 'localhost' || host === '127.0.0.1';
+        if (!isLoopback) {
+            return window.location.origin;
+        }
+        return `http://${window.location.host}`;
     };
 
     const baseUrl = getBaseUrl();
     const qrUrl = `${baseUrl}/upload?token=${uploadToken}&doc=${requirement}&expires=${qrExpiresAt}`;
-    const isNgrokUrl = baseUrl.includes('ngrok');
-    const showTunnelWarning = isNgrokUrl && tunnelAlive === false && !ngrokOverride;
 
     // State 2: QR Code Mode
     if (mode === 'qr') {
@@ -226,25 +228,6 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc,
                     </div>
                 </div>
 
-                {showTunnelWarning && (
-                    <div className="w-full mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
-                        <p className="text-xs font-black text-amber-700 uppercase tracking-wider mb-2">⚠️ Ngrok Tunnel Expired</p>
-                        <p className="text-xs font-bold text-amber-600 mb-3">Your ngrok tunnel appears to be offline. To fix:</p>
-                        <ol className="text-xs font-medium text-amber-600 list-decimal list-inside space-y-1 mb-3">
-                            <li>Run: <code className="bg-amber-100 px-1.5 py-0.5 rounded text-[11px] font-mono">ngrok http 3000</code></li>
-                            <li>Copy the new <code className="bg-amber-100 px-1.5 py-0.5 rounded text-[11px] font-mono">https://...ngrok-free.dev</code> URL</li>
-                            <li>Paste it below — no restart needed!</li>
-                        </ol>
-                        <input
-                            type="text"
-                            placeholder="Paste new ngrok URL here..."
-                            value={ngrokOverride}
-                            onChange={(e) => setNgrokOverride(e.target.value.trim())}
-                            className="w-full px-3 py-2 text-xs font-bold border border-amber-300 rounded-xl bg-white text-slate-700 placeholder:text-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        />
-                    </div>
-                )}
-
                 <div className="flex flex-col items-center justify-center gap-8 w-full bg-slate-50 p-6 sm:p-8 rounded-[2rem] border border-slate-100">
                     <div className="relative group mx-auto">
                         {/* Pulsing rings for attention */}
@@ -253,7 +236,7 @@ export default function DocumentUploader({ requirement, onUploaded, existingDoc,
 
                         <div className="bg-white p-4 rounded-3xl shadow-xl relative z-10 border border-slate-100 transform transition-transform group-hover:scale-[1.02]">
                             {uploadToken ? (
-                                <QRCodeSVG value={qrUrl} size={180} level="M" fgColor="#0f172a" />
+                                <QRCodeSVG key={qrUrl} value={qrUrl} size={180} level="M" fgColor="#0f172a" />
                             ) : (
                                 <div className="w-[180px] h-[180px] bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center">
                                     <ArrowPathIcon className="w-8 h-8 text-slate-300 animate-spin" />

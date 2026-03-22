@@ -8,7 +8,7 @@ import { downloadBridgeExport } from '../utils/citizenBridge';
 import logoSrc from '@/assets/logo.png';
 
 /** Citizen flow theme: #0B3D2E page, white rounded card (same as DynamicForm) */
-export default function ReceiptPage({ requestData, isOffline }) {
+export default function ReceiptPage({ requestData, isOffline, submissionToken: submissionTokenProp }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
@@ -19,6 +19,12 @@ export default function ReceiptPage({ requestData, isOffline }) {
     };
 
     const isPaymentPending = requestData.status === 'payment_pending';
+
+    const refToken =
+        submissionTokenProp ||
+        requestData.submission_token ||
+        requestData.payload?.submission_token ||
+        null;
 
     return (
         <div className="min-h-screen bg-[#0B3D2E] font-sans selection:bg-[#6FD6A6]/30 overflow-x-hidden flex flex-col items-center justify-center p-4 md:p-8 relative print:bg-white">
@@ -76,6 +82,13 @@ export default function ReceiptPage({ requestData, isOffline }) {
                                 <div>
                                     <p className="text-[10px] font-black text-[#0F6B4A]/60 uppercase tracking-[0.2em] mb-2">Official Request ID</p>
                                     <p className="text-2xl md:text-3xl font-black text-[#0B3D2E] tracking-tight break-all">{requestData.id}</p>
+                                    {refToken && (
+                                        <div className="mt-4 p-4 rounded-[20px] bg-[#0B3D2E]/5 border border-[#0F6B4A]/20">
+                                            <p className="text-[10px] font-black text-[#0F6B4A]/60 uppercase tracking-[0.2em] mb-1">Reference token (for verification)</p>
+                                            <p className="text-lg md:text-xl font-black font-mono text-[#0B3D2E] tracking-wide">{refToken}</p>
+                                            <p className="text-xs font-bold text-gray-500 mt-2">Share this token with the office if asked. It matches your submission in the admin queue.</p>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                     <div className="bg-gray-50/80 rounded-[24px] p-4 border border-gray-100">
@@ -94,7 +107,15 @@ export default function ReceiptPage({ requestData, isOffline }) {
                             </div>
 
                             <div className="p-5 bg-white rounded-[28px] border-2 border-[#0F6B4A]/20 shadow-lg flex flex-col items-center justify-center shrink-0 w-52 h-52">
-                                <QRCodeSVG value={JSON.stringify({ request_id: requestData.id })} size={120} level="Q" fgColor="#0B3D2E" />
+                                <QRCodeSVG
+                                    value={JSON.stringify({
+                                        request_id: requestData.id,
+                                        ...(refToken ? { submission_token: refToken } : {}),
+                                    })}
+                                    size={120}
+                                    level="Q"
+                                    fgColor="#0B3D2E"
+                                />
                                 <p className="text-[9px] font-black text-[#0B3D2E] mt-3 border border-[#0F6B4A]/25 px-3 py-1 rounded-full uppercase tracking-widest bg-[#6FD6A6]/10">
                                     Scan to Verify
                                 </p>

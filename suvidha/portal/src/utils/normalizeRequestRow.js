@@ -40,11 +40,26 @@ export function normalizeRequestRow(r) {
             ? rawService.replace(/_/g, ' ')
             : String(rawService);
 
+    const submission_token =
+        r.submission_token ||
+        p.submission_token ||
+        r.reference_token ||
+        p.reference_token ||
+        null;
+
+    const documents = Array.isArray(r.documents)
+        ? r.documents
+        : Array.isArray(p.documents)
+          ? p.documents
+          : [];
+
     return {
         ...r,
         applicant_name,
         phone,
         service_name,
+        submission_token,
+        documents,
         extracted_data: r.extracted_data || p,
         intent_confidence:
             r.intent_confidence ??

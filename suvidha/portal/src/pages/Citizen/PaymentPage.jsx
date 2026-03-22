@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { ShieldCheckIcon, CheckBadgeIcon, ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
@@ -16,6 +16,8 @@ export default function PaymentPage() {
     const { t } = useTranslation();
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const submissionToken = location.state?.submissionToken;
     const [requestData, setRequestData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [processingPayment, setProcessingPayment] = useState(false);
@@ -55,9 +57,9 @@ export default function PaymentPage() {
 
     useEffect(() => {
         if (!loading && requestData && !pendingPayment) {
-            navigate(`/citizen/receipt/${id}`, { replace: true });
+            navigate(`/citizen/receipt/${id}`, { replace: true, state: { submissionToken } });
         }
-    }, [loading, requestData, pendingPayment, navigate, id]);
+    }, [loading, requestData, pendingPayment, navigate, id, submissionToken]);
 
     const handlePaymentClick = () => {
         if (seniorMode) {
@@ -78,7 +80,7 @@ export default function PaymentPage() {
                 gateway_ref: `UPI-${Math.floor(Math.random() * 1000000000)}`
             });
             setTimeout(() => {
-                navigate(`/citizen/receipt/${id}`, { replace: true });
+                navigate(`/citizen/receipt/${id}`, { replace: true, state: { submissionToken } });
             }, 800);
         } catch (err) {
             console.error("Payment failed", err);
@@ -112,6 +114,11 @@ export default function PaymentPage() {
     }
 
     if (!pendingPayment) return null;
+
+    const displayRefToken =
+        submissionToken ||
+        requestData?.submission_token ||
+        requestData?.payload?.submission_token;
 
     return (
         <div className="min-h-screen bg-[#0B3D2E] font-sans selection:bg-[#6FD6A6]/30 overflow-x-hidden flex flex-col items-center justify-center p-4 md:p-8 relative">
@@ -212,6 +219,12 @@ export default function PaymentPage() {
                                     <span className="text-[#0B3D2E]/70 font-bold shrink-0">{t('AppID')}</span>
                                     <span className="font-mono font-black text-[#0B3D2E]">{requestData.id.split('-')[0]}</span>
                                 </div>
+                                {displayRefToken && (
+                                    <div className="flex justify-between gap-4 text-sm pb-3 border-b border-[#0B3D2E]/10">
+                                        <span className="text-[#0B3D2E]/70 font-bold shrink-0">Reference token</span>
+                                        <span className="font-mono font-black text-[#0B3D2E] text-right text-xs max-w-[60%] break-all">{displayRefToken}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between gap-4 text-sm">
                                     <span className="text-[#0B3D2E]/70 font-bold shrink-0">{t('FeeTarget')}</span>
                                     <span className="font-black text-[#0B3D2E] text-right capitalize">{requestData.department?.replace(/_/g, ' ')}</span>

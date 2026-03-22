@@ -90,7 +90,17 @@ export const AdminServices = {
     },
 
     getDocumentSignedUrl: async (key) => {
-        const response = await adminApi.get(`/documents/${key}/signed-url`);
+        const encoded = encodeURIComponent(String(key).replace(/^\//, ''));
+        const response = await adminApi.get(`/documents/${encoded}/signed-url`);
+        return response.data;
+    },
+
+    /** Stream file through API (avoids presigned URLs that use internal hostnames like minio:9002). */
+    getDocumentBlob: async (key) => {
+        const encoded = encodeURIComponent(String(key).replace(/^\//, ''));
+        const response = await adminApi.get(`/documents/${encoded}/stream`, {
+            responseType: 'blob',
+        });
         return response.data;
     },
 

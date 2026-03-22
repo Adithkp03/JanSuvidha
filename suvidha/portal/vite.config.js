@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// Ensure .env is always loaded from the portal folder (fixes wrong VITE_* when cwd differs)
+const portalRoot = path.resolve(__dirname);
+
 /**
  * When Docker/nginx is running, these paths hit the real API.
  * Do NOT use a blanket `/admin` proxy — it steals frontend routes like
@@ -10,6 +13,7 @@ import path from 'path';
 const backendProxy = 'http://127.0.0.1:80';
 
 export default defineConfig({
+    envDir: portalRoot,
     plugins: [react()],
     resolve: {
         alias: {
