@@ -9,6 +9,7 @@ import useIdleTimer from '../../hooks/useIdleTimer';
 import IdleOverlay from '../IdleOverlay';
 import { useQuery } from '@tanstack/react-query';
 import { AdminServices } from '../../services/adminApi';
+import { subscribeActiveAlertsChanged } from '../../utils/activeAlertsSync';
 import { ExclamationTriangleIcon as SolidExclamation } from '@heroicons/react/24/solid';
 
 export default function Shell({ workspace }) {
@@ -23,25 +24,18 @@ export default function Shell({ workspace }) {
     // Alert Polling (every 5s) + instant cross-tab updates
     const { data: activeAlerts, refetch: refetchAlerts } = useQuery({
         queryKey: ['citizenActiveAlerts'],
-        queryFn: async () => {
-            try {
-                return await AdminServices.getActiveAlerts();
-            } catch {
-                return JSON.parse(localStorage.getItem('jan_active_alerts') || '[]');
-            }
-        },
-        refetchInterval: 5000,
+        queryFn: () => AdminServices.getActiveAlerts(),
+        refetchInterval: 3000,
+        staleTime: 0,
         enabled: workspace === 'citizen'
     });
 
-    // Instant cross-tab alert updates via storage event
+    // Same-tab + cross-tab + cross-window (same origin): storage alone misses the writer tab
     useEffect(() => {
         if (workspace !== 'citizen') return;
-        const handleStorage = (e) => {
-            if (e.key === 'jan_active_alerts') refetchAlerts();
-        };
-        window.addEventListener('storage', handleStorage);
-        return () => window.removeEventListener('storage', handleStorage);
+        return subscribeActiveAlertsChanged(() => {
+            refetchAlerts();
+        });
     }, [workspace, refetchAlerts]);
 
     useEffect(() => {
@@ -131,23 +125,31 @@ export default function Shell({ workspace }) {
                 </div>
             )}
 
-            {/* Emergency Broadcast Banner */}
+            {/* Emergency broadcast: fixed above full-bleed citizen pages (e.g. StartFlow) */}
             {workspace === 'citizen' && activeAlerts?.length > 0 && (
-                <div className="bg-rose-600 text-white shadow-md z-50 relative animate-in slide-in-from-top-4">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                        {activeAlerts.map(alert => (
-                            <div key={alert.id} className="flex items-start sm:items-center gap-3 py-1">
-                                <SolidExclamation className="w-5 h-5 text-rose-200 shrink-0 mt-0.5 sm:mt-0 animate-pulse" />
-                                <div className="flex-1">
-                                    <span className="font-black tracking-tight text-white uppercase mr-2 border-r border-rose-400/50 pr-2">
-                                        {alert.type}
-                                    </span>
-                                    <span className="text-sm font-semibold text-rose-50">{alert.message}</span>
+                <>
+                    <div
+                        className={`fixed left-0 right-0 z-[100] bg-rose-600 text-white shadow-lg animate-in slide-in-from-top-4 ${!isOnline ? 'top-10' : 'top-0'}`}
+                        role="alert"
+                        aria-live="polite"
+                    >
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                            {activeAlerts.map(alert => (
+                                <div key={alert.id} className="flex items-start sm:items-center gap-3 py-1">
+                                    <SolidExclamation className="w-5 h-5 text-rose-200 shrink-0 mt-0.5 sm:mt-0 animate-pulse" />
+                                    <div className="flex-1">
+                                        <span className="font-black tracking-tight text-white uppercase mr-2 border-r border-rose-400/50 pr-2">
+                                            {alert.type}
+                                        </span>
+                                        <span className="text-sm font-semibold text-rose-50">{alert.message}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
+                    {/* Reserve vertical space so main content is not covered by the fixed banner */}
+                    <div className="shrink-0 min-h-[3.5rem]" aria-hidden />
+                </>
             )}
 
             {/* Premium Sticky Header - Hidden on full-page routes that have their own header */}

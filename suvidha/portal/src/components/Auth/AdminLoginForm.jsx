@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import useStore from '../../store/useStore';
 import LanguageSelector from '../LanguageSelector';
@@ -14,8 +13,17 @@ const DEPARTMENTS = [
     { id: 'public_works', label: 'Public Works' }
 ];
 
+/** .env uses VITE_DEPT_ADMIN_PW_* for Public Works (not PUBLIC_WORKS) */
+const DEPT_ENV_SUFFIX = {
+    electricity: 'ELEC',
+    gas: 'GAS',
+    water: 'WATER',
+    mc: 'MC',
+    waste: 'WASTE',
+    public_works: 'PW'
+};
+
 export default function AdminLoginForm() {
-    const { t } = useTranslation();
     const navigate = useNavigate();
     const { setAdminAuth } = useStore();
 
@@ -51,7 +59,8 @@ export default function AdminLoginForm() {
                     mockName = 'Super Administrator';
                 }
             } else if (role === 'dept_admin') {
-                const keyPrefix = `VITE_DEPT_ADMIN_${department.toUpperCase()}`;
+                const suffix = DEPT_ENV_SUFFIX[department] || department.toUpperCase();
+                const keyPrefix = `VITE_DEPT_ADMIN_${suffix}`;
                 const expectedEmail = import.meta.env[`${keyPrefix}_EMAIL`];
                 const expectedPassword = import.meta.env[`${keyPrefix}_PASSWORD`];
 

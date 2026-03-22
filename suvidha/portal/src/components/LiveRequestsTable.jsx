@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { formatDate, daysAgo } from '../utils/date';
 import { MagnifyingGlassIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { mergeOfflineRequestPool } from '../utils/offlineRequestPool';
+import { normalizeRequestRow } from '../utils/normalizeRequestRow';
 
 const PRIORITY_BADGES = {
     NORMAL: 'bg-slate-700 text-slate-300',
@@ -51,11 +53,10 @@ export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
         try {
             const resp = await api.get('/admin/requests');
             let data = resp.data.requests || [];
-            data = data.map(req => ({ ...req, computed_priority: computePriority(req) }));
+            data = data.map((req) => ({ ...normalizeRequestRow(req), computed_priority: computePriority(req) }));
 
-            // Also merge in local submissions that might not have reached the backend yet
-            const localSubs = getLocalSubmissions().map(s => ({
-                ...s,
+            const localSubs = getLocalSubmissions().map((s) => ({
+                ...normalizeRequestRow(s),
                 computed_priority: computePriority(s),
             }));
             // Deduplicate by id
@@ -64,13 +65,12 @@ export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
 
             setRequests(sortByPriority(merged));
         } catch (err) {
-            console.error("Failed fetching live requests from API, falling back to local data", err);
-            // Fallback: show locally-bridged citizen submissions
-            const localSubs = getLocalSubmissions().map(s => ({
-                ...s,
-                computed_priority: computePriority(s),
+            console.error("Failed fetching live requests from API, falling back to seed + bridge", err);
+            const merged = mergeOfflineRequestPool().map((r) => ({
+                ...normalizeRequestRow(r),
+                computed_priority: computePriority(r),
             }));
-            setRequests(sortByPriority(localSubs));
+            setRequests(sortByPriority(merged));
         } finally {
             setLoading(false);
         }

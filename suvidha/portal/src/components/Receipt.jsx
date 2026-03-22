@@ -4,6 +4,7 @@ import { CheckCircleIcon, PrinterIcon, CurrencyRupeeIcon, DocumentCheckIcon, Hom
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/date';
+import { downloadBridgeExport } from '../utils/citizenBridge';
 import logoSrc from '@/assets/logo.png';
 
 /** Citizen flow theme: #0B3D2E page, white rounded card (same as DynamicForm) */
@@ -143,7 +144,7 @@ export default function ReceiptPage({ requestData, isOffline }) {
                     </div>
                 </div>
 
-                <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4 w-full print:hidden">
+                <div className="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-4 w-full print:hidden">
                     <button
                         type="button"
                         onClick={() => navigate('/citizen')}
@@ -157,6 +158,14 @@ export default function ReceiptPage({ requestData, isOffline }) {
                         className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-10 py-4 font-black text-[#0B3D2E] bg-[#6FD6A6] hover:bg-white rounded-2xl shadow-xl transition-all"
                     >
                         <PrinterIcon className="w-5 h-5" /> Print Receipt
+                    </button>
+                    <button
+                        type="button"
+                        onClick={downloadBridgeExport}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-4 font-black text-[#0B3D2E] bg-white/90 hover:bg-white border border-[#0F6B4A]/30 rounded-2xl shadow-lg transition-all text-sm"
+                        title="Download submissions JSON for import on the admin device when the API is offline"
+                    >
+                        Export for admin (JSON)
                     </button>
                 </div>
             </div>

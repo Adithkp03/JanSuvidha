@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminServices } from '../../services/adminApi';
-import seedData from '../../../seed/admin-seed.json';
 import useAdminStore from '../../store/adminStore';
-import { ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { mergeImportedSubmissions, parseBridgeImportFile, subscribeToBridgeUpdates } from '../../utils/citizenBridge';
+import { ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon, ArrowPathIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import RequestDetailModal from './RequestDetailModal';
 
 export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
@@ -19,8 +19,9 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
     // Controlled Polling state
     const [newDataCount, setNewDataCount] = useState(0);
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const importInputRef = useRef(null);
 
-    // Primary fetch query
+    // Primary fetch query (AdminServices merges API + bridge; offline: seed + bridge)
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ['requestsTable', page, statusFilter, searchQuery, departmentFilter],
         queryFn: async () => {
@@ -29,70 +30,50 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
             if (statusFilter) params.status = statusFilter;
             if (searchQuery) params.search = searchQuery;
 
-            try {
-                const res = await AdminServices.getRequests(params);
-                let items = res.requests || [];
-                
-                // Also merge in localStorage citizen submissions
-                let localSubs = [];
-                try { localSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]'); } catch {}
-                const apiIds = new Set(items.map(r => r.id));
-                const newLocal = localSubs.filter(s => !apiIds.has(s.id));
-                items = [...items, ...newLocal];
+            const res = await AdminServices.getRequests(params);
+            let items = res.requests || [];
 
-                // Client-side filtering
-                let filteredItems = items;
-                if (departmentFilter) {
-                    filteredItems = filteredItems.filter(r => (r.department || '').toLowerCase().includes(departmentFilter.toLowerCase()));
-                }
-                if (statusFilter) {
-                    filteredItems = filteredItems.filter(r => r.status === statusFilter);
-                }
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    filteredItems = filteredItems.filter(r => 
-                        (r.id || '').toLowerCase().includes(q) || 
-                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
-                    );
-                }
-                
-                return { items: filteredItems, total: filteredItems.length };
-            } catch (err) {
-                console.warn('Backend API failed, using localStorage citizen submissions', err);
-                // Fallback: read from localStorage bridge
-                let localSubs = [];
-                try { localSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]'); } catch {}
-                
-                let items = localSubs;
-                if (departmentFilter) {
-                    items = items.filter(r => (r.department || '').toLowerCase().includes(departmentFilter.toLowerCase()));
-                }
-                if (statusFilter) {
-                    items = items.filter(r => r.status === statusFilter);
-                }
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    items = items.filter(r => 
-                        (r.id || '').toLowerCase().includes(q) || 
-                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
-                    );
-                }
-                return { items, total: items.length };
+            let filteredItems = items;
+            if (departmentFilter) {
+                filteredItems = filteredItems.filter((r) =>
+                    (r.department || '').toLowerCase().includes(departmentFilter.toLowerCase())
+                );
             }
+            if (statusFilter) {
+                filteredItems = filteredItems.filter((r) => r.status === statusFilter);
+            }
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filteredItems = filteredItems.filter(
+                    (r) =>
+                        (r.id || '').toLowerCase().includes(q) ||
+                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
+                );
+            }
+
+            return { items: filteredItems, total: filteredItems.length };
         },
         keepPreviousData: true,
         retry: 0,
         refetchInterval: (page === 1 && isPolling) ? pollingInterval : false
     });
 
-    // Listen for cross-tab localStorage changes (instant citizen submission updates)
-    useEffect(() => {
-        const handleStorage = (e) => {
-            if (e.key === 'jan-citizen-submissions') refetch();
-        };
-        window.addEventListener('storage', handleStorage);
-        return () => window.removeEventListener('storage', handleStorage);
-    }, [refetch]);
+    useEffect(() => subscribeToBridgeUpdates(() => refetch()), [refetch]);
+
+    const handleImportBridge = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            const rows = await parseBridgeImportFile(file);
+            mergeImportedSubmissions(rows);
+            await refetch();
+        } catch (err) {
+            console.error(err);
+            alert('Could not import file. Use JSON exported from the citizen portal.');
+        } finally {
+            e.target.value = '';
+        }
+    };
 
     // Background Check Query (only runs when NOT on page 1) to notify of new data
     useQuery({
@@ -102,7 +83,7 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
             if (departmentFilter) params.department = departmentFilter;
             
             const res = await AdminServices.getRequests(params);
-            return res.total || res.requests?.length || 0;
+            return res.requests?.length ?? 0;
         },
         refetchInterval: (page !== 1 && isPolling) ? pollingInterval : false,
         onSuccess: (newTotal) => {
@@ -193,7 +174,23 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
                     </select>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                    <input
+                        ref={importInputRef}
+                        type="file"
+                        accept="application/json,.json"
+                        className="hidden"
+                        onChange={handleImportBridge}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => importInputRef.current?.click()}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 text-slate-700 rounded-xl transition-all text-sm font-bold"
+                        title="Import jan-citizen-submissions JSON from another device"
+                    >
+                        <ArrowUpTrayIcon className="w-4 h-4" />
+                        Import bridge
+                    </button>
                     <button 
                         onClick={triggerRefresh}
                         className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 rounded-xl transition-all text-sm font-bold"

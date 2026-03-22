@@ -2,6 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+/**
+ * When Docker/nginx is running, these paths hit the real API.
+ * Do NOT use a blanket `/admin` proxy — it steals frontend routes like
+ * `/admin/login`, `/admin/requests` (SPA), causing 404 JS bundles or blank pages.
+ */
 const backendProxy = 'http://127.0.0.1:80';
 
 export default defineConfig({
@@ -13,7 +18,7 @@ export default defineConfig({
     },
     server: {
         port: 3000,
-        allowedHosts: true, // Allow ngrok and other external hosts
+        allowedHosts: true,
         proxy: {
             '/auth': backendProxy,
             '/services': backendProxy,
@@ -26,7 +31,17 @@ export default defineConfig({
             '/documents': backendProxy,
             '/health': backendProxy,
             '/admin/analytics': backendProxy,
-            '/admin/requests': backendProxy
-        }
-    }
+            // Same path as dept-admin SPA "Requests" page — only proxy API (JSON) calls
+            '/admin/requests': {
+                target: backendProxy,
+                changeOrigin: true,
+                bypass(req) {
+                    const accept = req.headers.accept || '';
+                    if (accept.includes('text/html')) {
+                        return '/index.html';
+                    }
+                },
+            },
+        },
+    },
 });

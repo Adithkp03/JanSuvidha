@@ -12,6 +12,7 @@ import { CheckCircleIcon, DocumentTextIcon, UserIcon, CheckBadgeIcon } from '@he
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Loader2, X, Accessibility, User, LogOut } from 'lucide-react';
 import AppLogo from '@/assets/logo.png';
+import { appendCitizenSubmission } from '../../utils/citizenBridge';
 
 export default function DynamicForm() {
     const { t } = useTranslation();
@@ -172,12 +173,11 @@ export default function DynamicForm() {
             }
         };
 
-        // Helper: save to localStorage for cross-session admin visibility
-        const saveToCrossBridge = (id, extraStatus = 'pending') => {
+        // Cross-session bridge (same browser) + export/import for other devices when API is down
+        const saveToCrossBridge = (bridgeId, extraStatus = 'pending') => {
             try {
-                const existing = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]');
                 const entry = {
-                    id,
+                    id: bridgeId,
                     department: serviceData.department,
                     service_type: serviceData.service_type,
                     service_name: serviceData.name || serviceData.service_type,
@@ -189,8 +189,10 @@ export default function DynamicForm() {
                     payload: formData,
                     documents: documentsPayload,
                 };
-                localStorage.setItem('jan-citizen-submissions', JSON.stringify([entry, ...existing]));
-            } catch (e) { console.warn('Cross-session bridge save failed', e); }
+                appendCitizenSubmission(entry);
+            } catch (e) {
+                console.warn('Cross-session bridge save failed', e);
+            }
         };
 
         try {

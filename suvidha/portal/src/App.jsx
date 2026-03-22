@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import useStore from './store/useStore';
@@ -8,9 +8,9 @@ import { syncQueue } from './utils/offlineSync';
 import Shell from './components/Layout/Shell';
 import AdminShell from './components/Layout/AdminShell';
 
-// Auth
+// Auth (admin login lazy-loaded so a bad chunk elsewhere cannot white-screen this route)
 import LoginForm from './components/Auth/LoginForm';
-import AdminLoginForm from './components/Auth/AdminLoginForm';
+const AdminLoginForm = lazy(() => import('./components/Auth/AdminLoginForm'));
 
 // Citizen Pages
 import StartFlow from './pages/Citizen/StartFlow';
@@ -102,10 +102,27 @@ export default function App() {
                 </Route>
 
                 {/* Admin Auth */}
-                <Route path="/admin/login" element={
-                    !adminToken ? <AdminLoginForm /> : 
-                        (adminRole === 'super_admin' ? <Navigate to="/superadmin" replace /> : <Navigate to="/admin" replace />)
-                } />
+                <Route
+                    path="/admin/login"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 gap-4">
+                                    <div className="w-12 h-12 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
+                                    <p className="text-slate-600 font-bold text-sm">Loading admin login…</p>
+                                </div>
+                            }
+                        >
+                            {!adminToken ? (
+                                <AdminLoginForm />
+                            ) : adminRole === 'super_admin' ? (
+                                <Navigate to="/superadmin" replace />
+                            ) : (
+                                <Navigate to="/admin" replace />
+                            )}
+                        </Suspense>
+                    }
+                />
 
                 {/* Super Admin Workspace */}
                 <Route path="/superadmin" element={
