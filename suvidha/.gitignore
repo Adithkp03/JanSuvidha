@@ -48,12 +48,5 @@ infra/.env
 
 **/node_modules/
 **/dist/
-
-**/.venv/
-**/__pycache__/infra/.env
-
-**/node_modules/
-**/dist/
-
 **/.venv/
 **/__pycache__/

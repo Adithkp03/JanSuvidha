@@ -26,7 +26,7 @@ jobs:
       - name: Node installs (services + frontends)
         run: |
           set -e
-          for d in services/api-gateway services/auth-service services/request-service services/routing-service services/payment-service services/doc-service kiosk-frontend admin-dashboard; do
+          for d in services/api-gateway services/auth-service services/request-service services/routing-service services/payment-service services/doc-service kiosk-frontend portal; do
             echo "Installing $d"
             (cd "$d" && npm install)
           done
@@ -34,7 +34,8 @@ jobs:
       - name: Node lint placeholders
         run: |
           set -e
-          for d in services/api-gateway services/auth-service services/request-service services/routing-service services/payment-service services/doc-service kiosk-frontend admin-dashboard; do
+          # portal: real ESLint (eslint.config.*) not wired yet; validated via build step below
+          for d in services/api-gateway services/auth-service services/request-service services/routing-service services/payment-service services/doc-service kiosk-frontend; do
             echo "Lint $d"
             (cd "$d" && npm run lint)
           done
@@ -51,7 +52,7 @@ jobs:
         run: |
           set -e
           (cd kiosk-frontend && npm run build)
-          (cd admin-dashboard && npm run build)
+          (cd portal && npm run build)
 
   docker-build:
     runs-on: ubuntu-latest
