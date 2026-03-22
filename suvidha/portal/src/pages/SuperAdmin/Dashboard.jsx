@@ -7,44 +7,77 @@ export default function Dashboard() {
     const { data: metrics } = useQuery({
         queryKey: ['superAdminMetrics'],
         queryFn: async () => {
-            const res = await AdminServices.getMetrics();
-            
-            // Map total stats
-            const total = res.total_requests || 0;
-            const fraud = res.fraud_flagged || 0;
-            
-            // Map department distribution
-            const deptMap = {};
-            res.by_department_status?.forEach(r => {
-                const dept = r.department.toUpperCase();
-                deptMap[dept] = (deptMap[dept] || 0) + parseInt(r.count, 10);
-            });
-            const by_department = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
+            try {
+                const res = await AdminServices.getMetrics();
+                
+                const total = res.total_requests || 0;
+                const fraud = res.fraud_flagged || 0;
+                
+                const deptMap = {};
+                res.by_department_status?.forEach(r => {
+                    const dept = r.department.toUpperCase();
+                    deptMap[dept] = (deptMap[dept] || 0) + parseInt(r.count, 10);
+                });
+                const by_department = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
 
-            // Map status distribution
-            const statusMap = {};
-            res.by_status?.forEach(r => {
-                const status = r.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-                statusMap[status] = (statusMap[status] || 0) + parseInt(r.count, 10);
-            });
-            const by_status = Object.entries(statusMap).map(([name, value]) => ({ name, value }));
-            
-            // Calculate pending
-            let pending = 0;
-            res.by_status?.forEach(r => {
-                if (r.status === 'pending' || r.status === 'in_review') pending += parseInt(r.count, 10);
-            });
+                const statusMap = {};
+                res.by_status?.forEach(r => {
+                    const status = r.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    statusMap[status] = (statusMap[status] || 0) + parseInt(r.count, 10);
+                });
+                const by_status = Object.entries(statusMap).map(([name, value]) => ({ name, value }));
+                
+                let pending = 0;
+                res.by_status?.forEach(r => {
+                    if (r.status === 'pending' || r.status === 'in_review') pending += parseInt(r.count, 10);
+                });
 
-            return {
-                total_today: total,
-                pending,
-                sla_breaches: fraud, // use fraud as a stand-in for alerts/breaches
-                revenue_today: total * 125,
-                by_department,
-                by_status,
-            };
+                // Also merge localStorage data
+                let localSubs = [];
+                try { localSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]'); } catch {}
+                const localPending = localSubs.filter(s => s.status === 'pending' || s.status === 'submitted').length;
+
+                return {
+                    total_today: total + localSubs.length,
+                    pending: pending + localPending,
+                    sla_breaches: fraud,
+                    revenue_today: (total + localSubs.length) * 125,
+                    by_department,
+                    by_status,
+                };
+            } catch {
+                // Fallback: compute metrics from localStorage bridge
+                let localSubs = [];
+                try { localSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]'); } catch {}
+                
+                const deptMap = {};
+                localSubs.forEach(s => {
+                    const dept = (s.department || 'UNKNOWN').toUpperCase();
+                    deptMap[dept] = (deptMap[dept] || 0) + 1;
+                });
+                const by_department = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
+
+                const statusMap = {};
+                localSubs.forEach(s => {
+                    const status = (s.status || 'pending').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    statusMap[status] = (statusMap[status] || 0) + 1;
+                });
+                const by_status = Object.entries(statusMap).map(([name, value]) => ({ name, value }));
+                
+                const pending = localSubs.filter(s => s.status === 'pending' || s.status === 'submitted').length;
+
+                return {
+                    total_today: localSubs.length,
+                    pending,
+                    sla_breaches: 0,
+                    revenue_today: localSubs.length * 125,
+                    by_department,
+                    by_status,
+                };
+            }
         },
-        refetchInterval: 30000 
+        retry: 0,
+        refetchInterval: 10000 
     });
 
     const deptData = metrics?.by_department || [];

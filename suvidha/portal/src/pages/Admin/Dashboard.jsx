@@ -47,7 +47,7 @@ export default function AdminDashboard() {
 
                 return { data: docs, total: docs.length };
             } catch {
-                // FALLBACK: Client-side filter on seed data for demo purposes + Local Offline Queue
+                // FALLBACK: Client-side filter on seed data for demo purposes + Local Offline Queue + Cross-session submissions
                 const localSubmissions = offlineQueue
                     .filter(item => item.type === 'REQUEST_SUBMIT')
                     .map(item => ({
@@ -68,11 +68,21 @@ export default function AdminDashboard() {
                         }))
                     }));
 
-                let docs = [...localSubmissions, ...seedData.requests];
+                // Read cross-session citizen submissions from localStorage
+                let crossSessionSubs = [];
+                try {
+                    crossSessionSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]');
+                } catch { /* ignore */ }
+
+                let docs = [...crossSessionSubs, ...localSubmissions, ...seedData.requests];
+                // Deduplicate by id
+                const seen = new Set();
+                docs = docs.filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; });
+
                 if (filters.department) docs = docs.filter(r => r.department.toLowerCase().includes(filters.department.toLowerCase()));
                 if (filters.status) docs = docs.filter(r => r.status === filters.status);
                 if (filters.priority) docs = docs.filter(r => calculatePriority(r).priority === filters.priority);
-                if (filters.search) docs = docs.filter(r => (r.id + r.applicant_name).toLowerCase().includes(filters.search.toLowerCase()));
+                if (filters.search) docs = docs.filter(r => (r.id + (r.applicant_name || '')).toLowerCase().includes(filters.search.toLowerCase()));
 
                 // Enhance seed data with dynamic priority/flags immediately
                 docs = docs.map(r => {

@@ -20,8 +20,8 @@ export default function Shell({ workspace }) {
     const [syncing, setSyncing] = useState(false);
     const [showIdleWarning, setShowIdleWarning] = useState(false);
 
-    // Alert Polling (every 15s)
-    const { data: activeAlerts } = useQuery({
+    // Alert Polling (every 5s) + instant cross-tab updates
+    const { data: activeAlerts, refetch: refetchAlerts } = useQuery({
         queryKey: ['citizenActiveAlerts'],
         queryFn: async () => {
             try {
@@ -30,9 +30,19 @@ export default function Shell({ workspace }) {
                 return JSON.parse(localStorage.getItem('jan_active_alerts') || '[]');
             }
         },
-        refetchInterval: 15000,
+        refetchInterval: 5000,
         enabled: workspace === 'citizen'
     });
+
+    // Instant cross-tab alert updates via storage event
+    useEffect(() => {
+        if (workspace !== 'citizen') return;
+        const handleStorage = (e) => {
+            if (e.key === 'jan_active_alerts') refetchAlerts();
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, [workspace, refetchAlerts]);
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -97,7 +107,10 @@ export default function Shell({ workspace }) {
     };
 
     const isHomePage = location.pathname === '/citizen';
-    const isFullPage = isHomePage || location.pathname === '/citizen/apply';
+    const isFullPage = isHomePage
+        || location.pathname === '/citizen/apply'
+        || location.pathname.startsWith('/citizen/receipt')
+        || location.pathname.startsWith('/citizen/payment');
 
     return (
         <div className="min-h-screen flex flex-col bg-civic-light transition-all duration-300">

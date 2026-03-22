@@ -11,6 +11,7 @@ const adminApi = axios.create({
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': '69420'
     },
+    timeout: 3000, // 3 second timeout — fail fast to show localStorage fallback
 });
 
 // Interceptor to attach Authorization token and X-Request-Id

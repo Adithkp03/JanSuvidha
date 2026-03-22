@@ -21,7 +21,7 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
     const [selectedRequest, setSelectedRequest] = useState(null);
 
     // Primary fetch query
-    const { data, isLoading, isFetching } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ['requestsTable', page, statusFilter, searchQuery, departmentFilter],
         queryFn: async () => {
             const params = { page, limit };
@@ -29,27 +29,70 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
             if (statusFilter) params.status = statusFilter;
             if (searchQuery) params.search = searchQuery;
 
-            // Remove the try...catch fallback entirely. 
-            // If the backend fails, the table should gracefully show the React Query error state (or no requests) instead of seed data.
-            const res = await AdminServices.getRequests(params);
-            const items = res.requests || [];
-            
-            // Client-side filtering if backend doesn't support search yet
-            let filteredItems = items;
-            if (searchQuery) {
-                const q = searchQuery.toLowerCase();
-                filteredItems = filteredItems.filter(r => 
-                    r.id.toLowerCase().includes(q) || 
-                    (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
-                );
+            try {
+                const res = await AdminServices.getRequests(params);
+                let items = res.requests || [];
+                
+                // Also merge in localStorage citizen submissions
+                let localSubs = [];
+                try { localSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]'); } catch {}
+                const apiIds = new Set(items.map(r => r.id));
+                const newLocal = localSubs.filter(s => !apiIds.has(s.id));
+                items = [...items, ...newLocal];
+
+                // Client-side filtering
+                let filteredItems = items;
+                if (departmentFilter) {
+                    filteredItems = filteredItems.filter(r => (r.department || '').toLowerCase().includes(departmentFilter.toLowerCase()));
+                }
+                if (statusFilter) {
+                    filteredItems = filteredItems.filter(r => r.status === statusFilter);
+                }
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    filteredItems = filteredItems.filter(r => 
+                        (r.id || '').toLowerCase().includes(q) || 
+                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
+                    );
+                }
+                
+                return { items: filteredItems, total: filteredItems.length };
+            } catch (err) {
+                console.warn('Backend API failed, using localStorage citizen submissions', err);
+                // Fallback: read from localStorage bridge
+                let localSubs = [];
+                try { localSubs = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]'); } catch {}
+                
+                let items = localSubs;
+                if (departmentFilter) {
+                    items = items.filter(r => (r.department || '').toLowerCase().includes(departmentFilter.toLowerCase()));
+                }
+                if (statusFilter) {
+                    items = items.filter(r => r.status === statusFilter);
+                }
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    items = items.filter(r => 
+                        (r.id || '').toLowerCase().includes(q) || 
+                        (r.applicant_name && r.applicant_name.toLowerCase().includes(q))
+                    );
+                }
+                return { items, total: items.length };
             }
-            
-            return { items: filteredItems, total: res.total || items.length };
         },
         keepPreviousData: true,
-        // We only actively auto-poll if we are on page 1. Otherwise we use a background check query
+        retry: 0,
         refetchInterval: (page === 1 && isPolling) ? pollingInterval : false
     });
+
+    // Listen for cross-tab localStorage changes (instant citizen submission updates)
+    useEffect(() => {
+        const handleStorage = (e) => {
+            if (e.key === 'jan-citizen-submissions') refetch();
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, [refetch]);
 
     // Background Check Query (only runs when NOT on page 1) to notify of new data
     useQuery({

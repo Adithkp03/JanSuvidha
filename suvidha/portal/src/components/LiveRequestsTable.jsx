@@ -12,6 +12,7 @@ const PRIORITY_BADGES = {
 const STATUS_MAP = {
     draft: "Draft",
     submitted: "Submitted",
+    pending: "Pending",
     under_review: "Under Review",
     doc_required: "Docs Needed",
     payment_pending: "Payment Pending",
@@ -20,30 +21,56 @@ const STATUS_MAP = {
     rejected: "Rejected"
 };
 
+// Read citizen submissions from the cross-session localStorage bridge
+const getLocalSubmissions = () => {
+    try {
+        return JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]');
+    } catch { return []; }
+};
+
 export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const computePriority = (req) => {
+        let priority = req.priority || 'NORMAL';
+        const age = daysAgo(req.created_at);
+        if (age > 7 && req.status !== 'completed' && req.status !== 'approved') priority = 'URGENT';
+        else if (age > 3 && req.status !== 'completed' && req.status !== 'approved') priority = 'HIGH';
+        return priority;
+    };
+
+    const sortByPriority = (data) => {
+        return data.sort((a, b) => {
+            const pVal = p => p === 'URGENT' ? 3 : p === 'HIGH' ? 2 : 1;
+            return pVal(b.computed_priority) - pVal(a.computed_priority);
+        });
+    };
+
     const fetchRequests = async () => {
         try {
             const resp = await api.get('/admin/requests');
-            // Sort internally to inject Priority calculation if backend omitted it
             let data = resp.data.requests || [];
-            data = data.map(req => {
-                let priority = req.priority || 'NORMAL';
-                const age = daysAgo(req.created_at);
-                if (age > 7 && req.status !== 'completed' && req.status !== 'approved') priority = 'URGENT';
-                else if (age > 3 && req.status !== 'completed' && req.status !== 'approved') priority = 'HIGH';
-                return { ...req, computed_priority: priority };
-            });
-            // Sort by URGENT > HIGH > NORMAL
-            data.sort((a, b) => {
-                const pVal = p => p === 'URGENT' ? 3 : p === 'HIGH' ? 2 : 1;
-                return pVal(b.computed_priority) - pVal(a.computed_priority);
-            });
-            setRequests(data);
+            data = data.map(req => ({ ...req, computed_priority: computePriority(req) }));
+
+            // Also merge in local submissions that might not have reached the backend yet
+            const localSubs = getLocalSubmissions().map(s => ({
+                ...s,
+                computed_priority: computePriority(s),
+            }));
+            // Deduplicate by id
+            const ids = new Set(data.map(r => r.id));
+            const merged = [...data, ...localSubs.filter(s => !ids.has(s.id))];
+
+            setRequests(sortByPriority(merged));
         } catch (err) {
-            console.error("Failed fetching live requests", err);
+            console.error("Failed fetching live requests from API, falling back to local data", err);
+            // Fallback: show locally-bridged citizen submissions
+            const localSubs = getLocalSubmissions().map(s => ({
+                ...s,
+                computed_priority: computePriority(s),
+            }));
+            setRequests(sortByPriority(localSubs));
         } finally {
             setLoading(false);
         }
@@ -59,7 +86,13 @@ export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
             if (active) fetchRequests();
         }, 5000);
 
-        return () => { active = false; clearInterval(interval); };
+        // Listen for cross-tab storage events (real-time updates when citizen submits in another tab)
+        const handleStorage = (e) => {
+            if (e.key === 'jan-citizen-submissions') fetchRequests();
+        };
+        window.addEventListener('storage', handleStorage);
+
+        return () => { active = false; clearInterval(interval); window.removeEventListener('storage', handleStorage); };
     }, [refreshTrigger]);
 
     if (loading && requests.length === 0) return <div className="py-20 text-center text-slate-500">Loading live data...</div>;
@@ -71,6 +104,7 @@ export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
                     <thead>
                         <tr className="bg-[#0f172a] text-xs uppercase tracking-wider text-slate-400 font-bold border-b border-slate-700/50">
                             <th className="px-6 py-4">Request ID</th>
+                            <th className="px-6 py-4">Applicant</th>
                             <th className="px-6 py-4">Service</th>
                             <th className="px-6 py-4">Priority</th>
                             <th className="px-6 py-4">Status</th>
@@ -84,10 +118,14 @@ export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
                                 onClick={() => onRowClick(req)}
                                 className="hover:bg-[#334155]/50 transition-colors cursor-pointer text-slate-300"
                             >
-                                <td className="px-6 py-4 font-mono text-xs">{req.id.substring(0, 8)}...</td>
+                                <td className="px-6 py-4 font-mono text-xs">{(req.id || '').substring(0, 12)}...</td>
                                 <td className="px-6 py-4">
-                                    <span className="font-bold text-white block">{req.service?.name || req.service_type || 'Unknown Service'}</span>
-                                    <span className="text-xs text-slate-500">{req.user_email || req.user_phone || 'Citizen'}</span>
+                                    <span className="font-bold text-white block">{req.applicant_name || 'Citizen'}</span>
+                                    <span className="text-xs text-slate-500">{req.user_email || req.phone || ''}</span>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className="font-bold text-white block">{req.service_name || req.service?.name || req.service_type || 'Unknown Service'}</span>
+                                    <span className="text-xs text-slate-500">{req.department || ''}</span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`text-[10px] px-2 py-1 rounded uppercase tracking-wider ${PRIORITY_BADGES[req.computed_priority]}`}>
@@ -111,7 +149,7 @@ export default function LiveRequestsTable({ onRowClick, refreshTrigger }) {
                             </tr>
                         ))}
                         {requests.length === 0 && (
-                            <tr><td colSpan="5" className="px-6 py-8 text-center text-slate-500">No active requests found.</td></tr>
+                            <tr><td colSpan="6" className="px-6 py-8 text-center text-slate-500">No active requests found.</td></tr>
                         )}
                     </tbody>
                 </table>

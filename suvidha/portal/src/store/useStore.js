@@ -68,7 +68,8 @@ const useStore = create(
                 adminToken: state.adminToken,
                 adminRole: state.adminRole,
                 adminDepartment: state.adminDepartment,
-                adminName: state.adminName
+                adminName: state.adminName,
+                offlineQueue: state.offlineQueue,
 
             }),
         }

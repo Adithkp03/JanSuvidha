@@ -172,6 +172,27 @@ export default function DynamicForm() {
             }
         };
 
+        // Helper: save to localStorage for cross-session admin visibility
+        const saveToCrossBridge = (id, extraStatus = 'pending') => {
+            try {
+                const existing = JSON.parse(localStorage.getItem('jan-citizen-submissions') || '[]');
+                const entry = {
+                    id,
+                    department: serviceData.department,
+                    service_type: serviceData.service_type,
+                    service_name: serviceData.name || serviceData.service_type,
+                    applicant_name: formData.full_name || formData.applicant_name || formData.child_name || formData.owner_name || user?.name || 'Citizen',
+                    phone: formData.phone || formData.mobile_number || 'N/A',
+                    user_email: user?.email || '',
+                    status: extraStatus,
+                    created_at: new Date().toISOString(),
+                    payload: formData,
+                    documents: documentsPayload,
+                };
+                localStorage.setItem('jan-citizen-submissions', JSON.stringify([entry, ...existing]));
+            } catch (e) { console.warn('Cross-session bridge save failed', e); }
+        };
+
         try {
             const reqPayload = { department: serviceData.department, service_type: serviceData.service_type, payload: formData };
             const resp = await api.post('/requests', reqPayload);
@@ -188,15 +209,24 @@ export default function DynamicForm() {
                     } catch (e) { console.warn('Doc registration failed', e); }
                 }
             }
+
+            // Save to cross-session bridge for admin visibility
+            saveToCrossBridge(reqId, 'submitted');
+
             navigate(`/citizen/payment/${reqId}`, { replace: true });
         } catch (err) {
             console.error(err);
-            if (err.offline) {
-                const id = 'draft-' + Date.now();
-                useStore.getState().addToQueue({ id, type: 'REQUEST_SUBMIT', payload });
+            // Always save to cross-session bridge + offline queue on any failure
+            const id = 'draft-' + Date.now();
+            useStore.getState().addToQueue({ id, type: 'REQUEST_SUBMIT', payload });
+            saveToCrossBridge(id, 'pending');
+
+            if (err.offline || !err.response) {
+                // True offline or network failure — navigate to draft receipt
                 navigate(`/citizen/receipt/${id}`, { replace: true, state: { offline: true } });
             } else {
-                setError(err.response?.data?.error || 'A secure connection could not be established to submit the application.');
+                // Server returned an error (4xx/5xx) — still queued, but show error
+                setError(err.response?.data?.error || 'Submission queued. Will be synced when the server is available.');
             }
         } finally {
             setSubmitting(false);

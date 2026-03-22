@@ -196,22 +196,6 @@ export default function StartFlow() {
                                 <DepartmentGrid onSelect={setSelectedDept} />
                             </section>
 
-                            <section className="bg-gray-50/80 rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-inner">
-                                <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                                    {quickActions.map((action, i) => (
-                                        <button 
-                                            key={i} 
-                                            onClick={action.action}
-                                            className="flex flex-col items-center gap-5 p-8 bg-white rounded-[32px] shadow-sm hover:shadow-xl transition-all group border border-gray-100 active:scale-95"
-                                        >
-                                            <div className={`w-20 h-20 ${action.bg} ${action.color} rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110`}>
-                                                {React.cloneElement(action.icon, { size: 32, strokeWidth: 2.5 })}
-                                            </div>
-                                            <span className={`font-black text-[#0B3D2E] tracking-tight ${seniorMode ? 'text-lg' : 'text-2xl'}`}>{action.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </section>
                         </>
                     ) : (
                         <div className="relative z-10 animate-in slide-in-from-right-8 duration-500 pt-10">
