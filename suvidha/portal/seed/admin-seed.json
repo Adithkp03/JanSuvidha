@@ -92,7 +92,15 @@
                 "date": "Fri",
                 "incidents": 0
             }
-        ]
+        ],
+        "by_department": {
+            "electricity": 87,
+            "gas": 34,
+            "water": 56,
+            "civil": 43,
+            "waste": 19,
+            "power": 8
+        }
     },
     "historicalContext": {
         "flagged_hashes": [
@@ -178,7 +186,7 @@
             "phone": "6666666666",
             "status": "approved",
             "created_at": "2026-02-25T16:20:00Z",
-            "intent_confidence": 0.90
+            "intent_confidence": 0.9
         },
         {
             "id": "REQ-2026-89F5",
@@ -189,6 +197,336 @@
             "status": "rejected",
             "created_at": "2026-02-27T10:05:00Z",
             "intent_confidence": 0.45
+        },
+        {
+            "id": "REQ-2026-9000",
+            "department": "revenue",
+            "service_name": "Service for revenue",
+            "applicant_name": "Amit Singh",
+            "phone": "9997519193",
+            "status": "approved",
+            "created_at": "2026-03-09T15:10:56.933Z",
+            "intent_confidence": 0.75,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9001",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Vijay Verma",
+            "phone": "9992830263",
+            "status": "rejected",
+            "created_at": "2026-03-10T15:10:56.934Z",
+            "intent_confidence": 0.68,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9002",
+            "department": "gas",
+            "service_name": "Service for gas",
+            "applicant_name": "Neha Kumar",
+            "phone": "9994068538",
+            "status": "doc_required",
+            "created_at": "2026-03-09T15:10:56.934Z",
+            "intent_confidence": 0.88,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9003",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Pooja Gupta",
+            "phone": "9999664216",
+            "status": "in_review",
+            "created_at": "2026-03-07T15:10:56.934Z",
+            "intent_confidence": 0.86,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9004",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Vijay Kumar",
+            "phone": "9992734218",
+            "status": "in_review",
+            "created_at": "2026-03-01T15:10:56.934Z",
+            "intent_confidence": 1,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9005",
+            "department": "power",
+            "service_name": "Service for power",
+            "applicant_name": "Amit Yadav",
+            "phone": "9994161550",
+            "status": "doc_required",
+            "created_at": "2026-02-20T15:10:56.934Z",
+            "intent_confidence": 0.92,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9006",
+            "department": "power",
+            "service_name": "Service for power",
+            "applicant_name": "Geeta Gupta",
+            "phone": "9994626341",
+            "status": "approved",
+            "created_at": "2026-03-08T15:10:56.934Z",
+            "intent_confidence": 0.89,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9007",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Neha Gupta",
+            "phone": "9994465063",
+            "status": "doc_required",
+            "created_at": "2026-03-08T15:10:56.934Z",
+            "intent_confidence": 0.92,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9008",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Ravi Nair",
+            "phone": "9993047577",
+            "status": "approved",
+            "created_at": "2026-03-20T15:10:56.934Z",
+            "intent_confidence": 0.57,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9009",
+            "department": "public_works",
+            "service_name": "Service for public_works",
+            "applicant_name": "Geeta Yadav",
+            "phone": "9993735442",
+            "status": "approved",
+            "created_at": "2026-03-18T15:10:56.934Z",
+            "intent_confidence": 0.55,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9010",
+            "department": "civil",
+            "service_name": "Service for civil",
+            "applicant_name": "Amit Gupta",
+            "phone": "9996699041",
+            "status": "in_review",
+            "created_at": "2026-03-12T15:10:56.934Z",
+            "intent_confidence": 0.91,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9011",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Sunil Verma",
+            "phone": "9997437644",
+            "status": "in_review",
+            "created_at": "2026-03-12T15:10:56.934Z",
+            "intent_confidence": 0.81,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9012",
+            "department": "power",
+            "service_name": "Service for power",
+            "applicant_name": "Vijay Patel",
+            "phone": "9997583263",
+            "status": "rejected",
+            "created_at": "2026-02-25T15:10:56.935Z",
+            "intent_confidence": 0.94,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9013",
+            "department": "water",
+            "service_name": "Service for water",
+            "applicant_name": "Ravi Nair",
+            "phone": "9991836500",
+            "status": "in_review",
+            "created_at": "2026-02-26T15:10:56.935Z",
+            "intent_confidence": 0.71,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9014",
+            "department": "water",
+            "service_name": "Service for water",
+            "applicant_name": "Kiran Gupta",
+            "phone": "9991719170",
+            "status": "approved",
+            "created_at": "2026-03-15T15:10:56.935Z",
+            "intent_confidence": 0.64,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9015",
+            "department": "public_works",
+            "service_name": "Service for public_works",
+            "applicant_name": "Vijay Yadav",
+            "phone": "9992380775",
+            "status": "rejected",
+            "created_at": "2026-03-06T15:10:56.935Z",
+            "intent_confidence": 0.73,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9016",
+            "department": "water",
+            "service_name": "Service for water",
+            "applicant_name": "Deepak Singh",
+            "phone": "9995804013",
+            "status": "rejected",
+            "created_at": "2026-03-07T15:10:56.935Z",
+            "intent_confidence": 0.77,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9017",
+            "department": "water",
+            "service_name": "Service for water",
+            "applicant_name": "Anita Kumar",
+            "phone": "9991756311",
+            "status": "in_review",
+            "created_at": "2026-03-19T15:10:56.935Z",
+            "intent_confidence": 0.78,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9018",
+            "department": "public_works",
+            "service_name": "Service for public_works",
+            "applicant_name": "Vijay Kumar",
+            "phone": "9996534356",
+            "status": "doc_required",
+            "created_at": "2026-03-02T15:10:56.935Z",
+            "intent_confidence": 0.98,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9019",
+            "department": "power",
+            "service_name": "Service for power",
+            "applicant_name": "Pooja Verma",
+            "phone": "9994976254",
+            "status": "pending",
+            "created_at": "2026-03-21T15:10:56.935Z",
+            "intent_confidence": 0.67,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9020",
+            "department": "civil",
+            "service_name": "Service for civil",
+            "applicant_name": "Deepak Kumar",
+            "phone": "9999347663",
+            "status": "pending",
+            "created_at": "2026-02-25T15:10:56.935Z",
+            "intent_confidence": 0.88,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9021",
+            "department": "civil",
+            "service_name": "Service for civil",
+            "applicant_name": "Neha Singh",
+            "phone": "9992664191",
+            "status": "doc_required",
+            "created_at": "2026-03-19T15:10:56.935Z",
+            "intent_confidence": 0.94,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9022",
+            "department": "revenue",
+            "service_name": "Service for revenue",
+            "applicant_name": "Pooja Verma",
+            "phone": "9992855907",
+            "status": "doc_required",
+            "created_at": "2026-02-27T15:10:56.935Z",
+            "intent_confidence": 0.83,
+            "urgency_flag": true
+        },
+        {
+            "id": "REQ-2026-9023",
+            "department": "revenue",
+            "service_name": "Service for revenue",
+            "applicant_name": "Pooja Singh",
+            "phone": "9997894843",
+            "status": "pending",
+            "created_at": "2026-03-06T15:10:56.935Z",
+            "intent_confidence": 0.56,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9024",
+            "department": "gas",
+            "service_name": "Service for gas",
+            "applicant_name": "Kiran Sharma",
+            "phone": "9998770194",
+            "status": "doc_required",
+            "created_at": "2026-02-24T15:10:56.935Z",
+            "intent_confidence": 0.55,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9025",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Amit Kumar",
+            "phone": "9999273969",
+            "status": "in_review",
+            "created_at": "2026-03-16T15:10:56.935Z",
+            "intent_confidence": 0.82,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9026",
+            "department": "revenue",
+            "service_name": "Service for revenue",
+            "applicant_name": "Amit Singh",
+            "phone": "9998942757",
+            "status": "in_review",
+            "created_at": "2026-03-09T15:10:56.935Z",
+            "intent_confidence": 0.58,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9027",
+            "department": "waste",
+            "service_name": "Service for waste",
+            "applicant_name": "Deepak Kumar",
+            "phone": "9994131283",
+            "status": "approved",
+            "created_at": "2026-03-17T15:10:56.935Z",
+            "intent_confidence": 0.63,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9028",
+            "department": "revenue",
+            "service_name": "Service for revenue",
+            "applicant_name": "Sunil Rao",
+            "phone": "9992244629",
+            "status": "approved",
+            "created_at": "2026-03-11T15:10:56.935Z",
+            "intent_confidence": 0.89,
+            "urgency_flag": false
+        },
+        {
+            "id": "REQ-2026-9029",
+            "department": "civil",
+            "service_name": "Service for civil",
+            "applicant_name": "Deepak Verma",
+            "phone": "9992445737",
+            "status": "in_review",
+            "created_at": "2026-03-16T15:10:56.935Z",
+            "intent_confidence": 0.59,
+            "urgency_flag": false
         }
     ]
 }

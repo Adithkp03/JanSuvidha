@@ -4,16 +4,21 @@ import { useTranslation } from 'react-i18next';
 import FormRenderer from '../../components/FormRenderer';
 import DocumentUploader from '../../components/DocumentUploader';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
+import LanguageSelector from '../../components/LanguageSelector';
 import api from '../../services/api';
 import useStore from '../../store/useStore';
 import useSpeakAloud from '../../hooks/useSpeakAloud';
 import { CheckCircleIcon, DocumentTextIcon, UserIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { Loader2, X, Accessibility, User, LogOut } from 'lucide-react';
+import AppLogo from '@/assets/logo.png';
 
 export default function DynamicForm() {
     const { t } = useTranslation();
     const { state } = useLocation();
     const navigate = useNavigate();
     const { user } = useStore();
+    const setSeniorMode = useStore((s) => s.setSeniorMode);
 
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({});
@@ -21,10 +26,21 @@ export default function DynamicForm() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [serviceData, setServiceData] = useState(state?.serviceData || null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(!state?.serviceData && !!state?.serviceCode);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const seniorMode = useStore((s) => s.seniorMode);
     const { speak } = useSpeakAloud();
+
+    // Fallback service definitions for when the backend is offline
+    const FALLBACK_SERVICES = {
+        elec_bill_pay: { service_type: 'elec_bill_pay', name: 'Pay Electricity Bill', description: 'Pay your current or outstanding electricity bill online.', department: 'electricity', fee_amount: 0, processing_days: 1, required_documents: [], form_schema: [{ name: 'consumer_number', label: 'ConsumerNumber', type: 'text', required: true }, { name: 'issue_description', label: 'IssueDescription', type: 'textarea', required: true }] },
+        elec_new_conn: { service_type: 'elec_new_conn', name: 'New Electricity Connection', description: 'Apply for a new electricity connection.', department: 'electricity', fee_amount: 2000, processing_days: 14, required_documents: ['id_proof', 'address_proof'], form_schema: [{ name: 'full_name', label: 'FullName', type: 'text', required: true }, { name: 'address', label: 'Address', type: 'textarea', required: true }, { name: 'phone', label: 'Phone', type: 'text', required: true }] },
+        water_connection: { service_type: 'water_connection', name: 'Water Connection', description: 'Apply for a new water supply connection.', department: 'water', fee_amount: 1500, processing_days: 21, required_documents: ['id_proof', 'address_proof'], form_schema: [{ name: 'full_name', label: 'FullName', type: 'text', required: true }, { name: 'address', label: 'Address', type: 'textarea', required: true }, { name: 'phone', label: 'Phone', type: 'text', required: true }] },
+        birth_cert: { service_type: 'birth_cert', name: 'Birth Certificate', description: 'Apply for a birth certificate.', department: 'mc', fee_amount: 50, processing_days: 7, required_documents: ['hospital_record'], form_schema: [{ name: 'child_name', label: 'ChildName', type: 'text', required: true }, { name: 'date_of_birth', label: 'DateOfBirth', type: 'date', required: true }, { name: 'hospital_name', label: 'HospitalName', type: 'text', required: true }] },
+        property_tax: { service_type: 'property_tax', name: 'Property Tax Payment', description: 'Pay your property tax online.', department: 'mc', fee_amount: 0, processing_days: 1, required_documents: [], form_schema: [{ name: 'property_id', label: 'PropertyID', type: 'text', required: true }, { name: 'owner_name', label: 'OwnerName', type: 'text', required: true }] },
+        emergency_disaster_relief: { service_type: 'emergency_disaster_relief', name: 'Emergency Relief', description: 'Apply for emergency disaster relief assistance.', department: 'emergency', fee_amount: 0, processing_days: 1, required_documents: [], form_schema: [{ name: 'full_name', label: 'FullName', type: 'text', required: true }, { name: 'emergency_type', label: 'EmergencyType', type: 'select', required: true, options: ['Flood', 'Fire', 'Earthquake', 'Other'] }, { name: 'description', label: 'IssueDescription', type: 'textarea', required: true }] },
+    };
 
     useEffect(() => {
         if (state?.serviceData) {
@@ -37,6 +53,16 @@ export default function DynamicForm() {
                 .then(resp => {
                     const svc = (resp.data.services || []).find(s => s.service_type === state.serviceCode);
                     if (svc) setServiceData(svc);
+                    else {
+                        // API returned but service not found — use fallback
+                        const fallback = FALLBACK_SERVICES[state.serviceCode];
+                        if (fallback) setServiceData(fallback);
+                    }
+                })
+                .catch(() => {
+                    // API completely failed — use fallback
+                    const fallback = FALLBACK_SERVICES[state.serviceCode];
+                    if (fallback) setServiceData(fallback);
                 })
                 .finally(() => setLoading(false));
         }
@@ -44,19 +70,19 @@ export default function DynamicForm() {
 
     if (!serviceData) {
         if (loading) return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                <div className="w-12 h-12 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
-                <p className="mt-4 text-slate-500 font-bold animate-pulse">{t('LoadingApp')}</p>
+            <div className="flex flex-col items-center justify-center min-h-[50vh] p-8">
+                <div className="w-16 h-16 border-4 border-gray-200 border-t-[#0B3D2E] rounded-full animate-spin"></div>
+                <p className="mt-6 text-[#0B3D2E] font-black text-lg animate-pulse">{t('LoadingApp')}</p>
             </div>
         );
         return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-                    <DocumentTextIcon className="w-10 h-10 text-slate-400" />
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                    <DocumentTextIcon className="w-10 h-10 text-gray-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('ServiceNotFound')}</h2>
-                <p className="text-slate-500 mb-6 max-w-sm">{t('ServiceNotFoundDesc')}</p>
-                <button onClick={() => navigate('/citizen')} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">{t('ReturnToDashboard')}</button>
+                <h2 className="text-2xl font-black text-[#0B3D2E] mb-2">{t('ServiceNotFound')}</h2>
+                <p className="text-gray-500 font-bold mb-6 max-w-sm">{t('ServiceNotFoundDesc')}</p>
+                <button onClick={() => navigate('/citizen')} className="px-8 py-4 bg-[#0B3D2E] text-white rounded-2xl font-black hover:bg-[#0F6B4A] transition-colors shadow-lg">{t('ReturnToDashboard')}</button>
             </div>
         );
     }
@@ -187,219 +213,240 @@ export default function DynamicForm() {
     const activeStepIndex = steps.findIndex(s => s.num === step);
 
     return (
-        <>
+        <div className="min-h-screen bg-[#0B3D2E] font-sans selection:bg-[#6FD6A6]/30 overflow-x-hidden flex flex-col items-center justify-center p-4 md:p-8 relative">
+            
+            {/* Ambient Background Blobs */}
+            <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#0F6B4A] rounded-full blur-[120px] opacity-40 animate-pulse"></div>
+            <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#6FD6A6] rounded-full blur-[150px] opacity-10"></div>
+
             {showConfirm && (
                 <ConfirmationDialog
                     onConfirm={submitApplication}
                     onCancel={() => setShowConfirm(false)}
                 />
             )}
-            <div className="max-w-5xl mx-auto py-8 lg:py-12 px-4 sm:px-6">
+            
+            <div className="relative w-full max-w-[1200px] bg-white/95 backdrop-blur-xl rounded-[48px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col transition-all duration-500 overflow-hidden flex-1">
+                
+                <header className="px-6 sm:px-12 py-6 sm:py-8 flex items-center justify-between border-b border-gray-100 relative">
+                    <div className="flex items-center gap-3 sm:gap-5">
+                        <button 
+                            onClick={() => navigate('/citizen')}
+                            className="p-3 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[#0B3D2E] transition-all"
+                        >
+                            <ArrowLeftIcon className="w-6 h-6" strokeWidth={3} />
+                        </button>
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden">
+                            <img src={AppLogo} alt="JanSuvidha Logo" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="hidden xs:block">
+                            <h1 className="text-lg sm:text-xl font-black text-[#0B3D2E] tracking-tight leading-none uppercase">JanSuvidha</h1>
+                            <p className="text-[8px] sm:text-[10px] font-black text-[#0F6B4A]/60 tracking-[0.3em] uppercase mt-1">{t('Title')}</p>
+                        </div>
+                    </div>
 
-            {/* Context Header */}
-            <div className="mb-10 text-center">
-                <div className="inline-flex items-center justify-center p-1.5 bg-primary-50 rounded-full mb-4 shadow-sm border border-primary-100">
-                    <span className="px-3 py-1 bg-white text-primary-700 text-xs font-black tracking-widest uppercase rounded-full shadow-sm">
-                        {t(serviceData.department)}
-                    </span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 tracking-tight mb-4">{t(serviceData.name)}</h1>
-                <p className="text-slate-500 text-lg max-w-2xl mx-auto">{t(serviceData.description)}</p>
-            </div>
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => setSeniorMode(!seniorMode)}
+                            className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all duration-300 ${seniorMode ? 'bg-[#0B3D2E] text-white border-[#0B3D2E]' : 'bg-gray-50 border-transparent hover:border-emerald-200 text-gray-700'}`}
+                        >
+                            <Accessibility className={`${seniorMode ? 'animate-bounce' : ''}`} size={22} />
+                            <span className={`font-black uppercase tracking-tight ${seniorMode ? 'text-lg' : 'text-sm'}`}>{t('SeniorMode')}</span>
+                        </button>
 
-            {/* Redesigned Premium Stepper */}
-            <div className="mb-12 relative w-full max-w-3xl mx-auto hidden sm:block">
-                {/* Connecting Lines */}
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-gradient-to-r from-primary-500 to-indigo-500 transition-all duration-700 ease-in-out"
-                        style={{ width: `${(activeStepIndex / (steps.length - 1)) * 100}%` }}
-                    ></div>
-                </div>
+                        <div className="relative">
+                            <LanguageSelector />
+                        </div>
 
-                <div className="flex justify-between relative z-10 w-full">
-                    {steps.map((s, idx) => {
-                        const isCompleted = idx < activeStepIndex;
-                        const isActive = idx === activeStepIndex;
-                        const isPending = idx > activeStepIndex;
-                        const Icon = s.icon;
-
-                        return (
-                            <div key={s.num} className="flex flex-col items-center group">
-                                <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-500 border-4 border-white ${isActive ? 'bg-primary-600 text-white scale-110 shadow-primary-500/40 outline outline-4 outline-primary-50' :
-                                    isCompleted ? 'bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer' :
-                                        'bg-slate-100 text-slate-400'
-                                    }`}
-                                    onClick={() => { if (isCompleted) setStep(s.num); }}
-                                >
-                                    {isCompleted ? <CheckCircleIcon className="w-7 h-7" /> : <Icon className="w-6 h-6" />}
-                                </div>
-                                <span className={`mt-4 text-sm font-bold uppercase tracking-wider ${isActive ? 'text-primary-800' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>
-                                    {s.label}
-                                </span>
+                        <div className="pl-2 sm:pl-4 border-l border-gray-200 flex items-center gap-2 sm:gap-3 relative">
+                            <div className="hidden sm:flex flex-col items-end mr-1 text-right">
+                                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">Verified</span>
+                                <span className="text-sm font-bold text-[#0B3D2E]">{user?.name || t('Citizen')}</span>
                             </div>
-                        );
-                    })}
-                </div>
-            </div>
+                            <button 
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#0F6B4A]/10 flex items-center justify-center border-2 border-white shadow-md overflow-hidden hover:bg-[#0F6B4A]/20 transition-all active:scale-95"
+                            >
+                                <User className="text-[#0B3D2E]" />
+                            </button>
 
-            {/* Mobile Stepper Text */}
-            <div className="sm:hidden mb-8 text-center bg-white py-3 px-4 rounded-full shadow-sm border border-slate-100 font-bold text-slate-700">
-                Step {activeStepIndex + 1} of {steps.length}: <span className="text-primary-600">{steps[activeStepIndex].label}</span>
-            </div>
-
-            {/* Container for Content */}
-            <div className="glass-card shadow-xl rounded-3xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-
-                {/* Step Content */}
-                <div className="p-6 sm:p-10 lg:p-14">
-
-                    {step === 1 && (
-                        <FormRenderer
-                            schema={formSchema}
-                            onSubmit={handleFormSubmit}
-                            onBack={() => navigate('/citizen')}
-                            defaultValues={formData}
-                        />
-                    )}
-
-                    {step === 2 && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
-                            <div className="border-b border-slate-100 pb-6 mb-8">
-                                <h3 className="text-2xl font-black text-slate-800 mb-2">{t('ProvideDocs')}</h3>
-                                <p className="text-slate-500 text-lg">{t('UploadDocsDesc')}</p>
-                            </div>
-
-                            {error && (
-                                <div className="flex items-center gap-3 bg-red-50 text-red-700 p-4 rounded-2xl border border-red-100 font-bold shadow-sm mb-8">
-                                    <svg className="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-                                    {error}
+                            {showProfileMenu && (
+                                <div className="absolute top-full right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-[100] animate-in fade-in slide-in-from-top-2">
+                                    <div className="px-4 py-3 border-b border-gray-50 sm:hidden">
+                                        <p className="text-xs font-black text-emerald-600 uppercase">Verified</p>
+                                        <p className="font-bold text-[#0B3D2E]">{user?.name || t('Citizen')}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => {
+                                            const { logout } = useStore.getState();
+                                            logout();
+                                            navigate('/');
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 font-bold transition-colors"
+                                    >
+                                        <LogOut size={18} />
+                                        <span>{t('SignOut')}</span>
+                                    </button>
                                 </div>
                             )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {docsRequired.map(req => (
-                                    <DocumentUploader
-                                        key={req}
-                                        requirement={req}
-                                        existingDoc={uploadedDocs[req]}
-                                        onUploaded={handleDocUploaded}
-                                    />
-                                ))}
-                            </div>
-
-                            <div className="flex flex-col-reverse sm:flex-row justify-between items-center sm:gap-4 pt-10 mt-10 border-t border-slate-100">
-                                <button onClick={() => setStep(1)} className="w-full sm:w-auto mt-4 sm:mt-0 px-8 py-4 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-                                    &larr; {t('BackToDetails')}
-                                </button>
-                                <button onClick={proceedToReview} className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white font-extrabold text-lg rounded-xl shadow-xl hover:bg-primary-600 hover:shadow-primary-500/30 transition-all duration-300">
-                                    {t('ReviewApplication')}
-                                </button>
-                            </div>
                         </div>
-                    )}
+                    </div>
+                </header>
 
-                    {step === 3 && (
-                        <div className="space-y-10 animate-in fade-in slide-in-from-right-8 duration-500">
+                <main className="flex-1 px-6 sm:px-12 py-10 overflow-y-auto custom-scrollbar">
+                    
+                    {/* Premium Stepper */}
+                    <div className="mb-16 relative w-full max-w-2xl mx-auto hidden sm:block">
+                        <div className="absolute top-1/2 left-0 w-full h-1.5 bg-gray-100 -translate-y-1/2 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-[#0B3D2E] to-[#6FD6A6] transition-all duration-700 ease-in-out"
+                                style={{ width: `${(activeStepIndex / (steps.length - 1)) * 100}%` }}
+                            ></div>
+                        </div>
 
-                            <div className="text-center sm:text-left border-b border-slate-100 pb-6">
-                                <h3 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">{t('ApplicationSummary')}</h3>
-                                <p className="text-slate-500 text-lg">{t('VerifyInfoDesc')}</p>
-                            </div>
+                        <div className="flex justify-between relative z-10 w-full">
+                            {steps.map((s, idx) => {
+                                const isCompleted = idx < activeStepIndex;
+                                const isActive = idx === activeStepIndex;
+                                const Icon = s.icon;
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                                {/* Left Col - Form Data */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="font-black text-slate-800 flex items-center gap-2 text-xl">
-                                            <UserIcon className="w-6 h-6 text-primary-500" />
-                                            {t('ApplicantDetails')}
-                                        </h4>
-                                        <button onClick={() => setStep(1)} className="text-sm font-bold text-primary-600 hover:underline">{t('EditBtn')}</button>
+                                return (
+                                    <div key={s.num} className="flex flex-col items-center group">
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 border-4 border-white ${isActive ? 'bg-[#0B3D2E] text-white scale-110 shadow-[#0B3D2E]/20' :
+                                            isCompleted ? 'bg-[#0F6B4A] text-white cursor-pointer hover:scale-105' :
+                                                'bg-gray-100 text-gray-400'
+                                            }`}
+                                            onClick={() => { if (isCompleted) setStep(s.num); }}
+                                        >
+                                            {isCompleted ? <CheckCircleIcon className="w-7 h-7" /> : <Icon className="w-6 h-6" />}
+                                        </div>
                                     </div>
-                                    <div className="bg-slate-50/80 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-slate-200">
-                                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
-                                            {Object.keys(formData).map(key => (
-                                                <div key={key} className="break-words">
-                                                    <dt className="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">
-                                                        {key.replace(/_/g, ' ')}
-                                                    </dt>
-                                                    <dd className="text-base font-bold text-slate-800">
-                                                        {formData[key]?.toString() || <span className="text-slate-400 italic">Not Provided</span>}
-                                                    </dd>
-                                                </div>
-                                            ))}
-                                        </dl>
-                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto">
+                        {step === 1 && (
+                            <FormRenderer
+                                schema={formSchema}
+                                onSubmit={handleFormSubmit}
+                                onBack={() => navigate('/citizen')}
+                                defaultValues={formData}
+                            />
+                        )}
+
+                        {step === 2 && (
+                            <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+                                <div className="border-b border-gray-100 pb-6 mb-8">
+                                    <h3 className="text-3xl font-black text-[#0B3D2E] mb-2">{t('ProvideDocs')}</h3>
+                                    <p className="text-gray-500 font-bold">{t('UploadDocsDesc')}</p>
                                 </div>
 
-                                {/* Right Col - Documents Data */}
-                                {docsRequired.length > 0 && (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="font-black text-slate-800 flex items-center gap-2 text-xl">
-                                                <DocumentTextIcon className="w-6 h-6 text-amber-500" />
-                                                {t('AttachedFiles')}
-                                            </h4>
-                                            <button onClick={() => setStep(2)} className="text-sm font-bold text-primary-600 hover:underline">{t('EditBtn')}</button>
-                                        </div>
-                                        <div className="bg-emerald-50/50 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-emerald-100/50">
-                                            <ul className="space-y-4">
-                                                {docsRequired.map(req => (
-                                                    <li key={req} className="flex gap-4 items-start bg-white p-4 rounded-2xl shadow-sm border border-emerald-100">
-                                                        <CheckCircleIcon className="w-7 h-7 text-emerald-500 shrink-0" />
-                                                        <div className="overflow-hidden">
-                                                            <p className="font-bold text-slate-800 uppercase text-sm tracking-wide">
-                                                                {req.replace(/_/g, ' ')}
-                                                            </p>
-                                                            <p className="text-slate-500 text-sm font-medium mt-1 truncate" title={uploadedDocs[req]?.filename}>
-                                                                {uploadedDocs[req]?.filename}
-                                                            </p>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                                {error && (
+                                    <div className="flex items-center gap-3 bg-red-50 text-red-700 p-5 rounded-3xl border border-red-100 font-bold shadow-sm mb-8">
+                                        <X className="w-6 h-6 shrink-0" />
+                                        {error}
                                     </div>
                                 )}
-                            </div>
 
-                            {error && (
-                                <div className="flex items-center gap-3 bg-red-50 text-red-700 p-5 rounded-2xl border border-red-100 font-bold shadow-sm">
-                                    <svg className="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-                                    {error}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {docsRequired.map(req => (
+                                        <DocumentUploader
+                                            key={req}
+                                            requirement={req}
+                                            existingDoc={uploadedDocs[req]}
+                                            onUploaded={handleDocUploaded}
+                                        />
+                                    ))}
                                 </div>
-                            )}
 
-                            {/* Sticky-like Submission Footer */}
-                            <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-transparent pointer-events-none"></div>
-                                <p className="text-primary-100 font-medium relative z-10 text-center sm:text-left">
-                                    {t('TermsAndConditions')}
-                                </p>
-                                <button
-                                    disabled={submitting}
-                                    onClick={handleSubmitClick}
-                                    className="w-full sm:w-auto px-10 py-5 bg-emerald-500 text-white font-black text-xl rounded-2xl shadow-lg hover:bg-emerald-400 hover:shadow-emerald-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 relative z-10"
-                                >
-                                    {submitting ? (
-                                        <>
-                                            <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            {t('SubmittingProtocol')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {t('SubmitSecurely')}
-                                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                                        </>
-                                    )}
-                                </button>
+                                <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 pt-10 mt-10 border-t border-gray-100">
+                                    <button onClick={() => setStep(1)} className="w-full sm:w-auto px-8 py-4 font-black text-[#0B3D2E] hover:bg-gray-50 rounded-2xl transition-all uppercase tracking-widest text-xs">
+                                        &larr; {t('Back')}
+                                    </button>
+                                    <button onClick={proceedToReview} className="w-full sm:w-auto px-10 py-5 bg-[#0B3D2E] text-white font-black text-lg rounded-2xl shadow-xl hover:bg-[#0F6B4A] transition-all active:scale-95 uppercase tracking-tighter">
+                                        {t('ReviewApplication')}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+
+                        {step === 3 && (
+                            <div className="space-y-10 animate-in fade-in slide-in-from-right-8 duration-500 text-left">
+                                <div className="border-b border-gray-100 pb-6 mb-8">
+                                    <h3 className="text-3xl font-black text-[#0B3D2E] mb-2">{t('ApplicationSummary')}</h3>
+                                    <p className="text-gray-500 font-bold">{t('VerifyInfoDesc')}</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-6">
+                                        <h4 className="font-black text-[#0B3D2E] flex items-center gap-3 text-xl uppercase tracking-tight">
+                                            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                                                <UserIcon className="w-6 h-6" />
+                                            </div>
+                                            {t('ApplicantDetails')}
+                                        </h4>
+                                        <div className="bg-gray-50/50 rounded-[32px] p-8 border border-gray-100">
+                                            <dl className="space-y-6">
+                                                {Object.keys(formData).map(key => (
+                                                    <div key={key}>
+                                                        <dt className="text-[10px] font-black text-[#0F6B4A]/60 uppercase tracking-widest mb-1">{key.replace(/_/g, ' ')}</dt>
+                                                        <dd className="text-lg font-black text-[#0B3D2E]">{formData[key]?.toString() || '—'}</dd>
+                                                    </div>
+                                                ))}
+                                            </dl>
+                                        </div>
+                                    </div>
+
+                                    {docsRequired.length > 0 && (
+                                        <div className="space-y-6">
+                                            <h4 className="font-black text-[#0B3D2E] flex items-center gap-3 text-xl uppercase tracking-tight">
+                                                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                                                    <DocumentTextIcon className="w-6 h-6" />
+                                                </div>
+                                                {t('AttachedFiles')}
+                                            </h4>
+                                            <div className="space-y-4">
+                                                {docsRequired.map(req => (
+                                                    <div key={req} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                                        <CheckCircleIcon className="w-6 h-6 text-[#6FD6A6]" />
+                                                        <div>
+                                                            <p className="text-[10px] font-black text-[#0F6B4A]/60 uppercase tracking-widest">{req.replace(/_/g, ' ')}</p>
+                                                            <p className="text-sm font-bold text-[#0B3D2E] truncate">{uploadedDocs[req]?.filename}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="bg-[#0B3D2E] rounded-[40px] p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden mt-12">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#6FD6A6]/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                                    <div className="relative z-10 flex-1">
+                                        <h4 className="text-white font-black text-xl mb-2">{t('ReadyToSubmit')}</h4>
+                                        <p className="text-white/60 font-bold text-sm tracking-tight">{t('TermsAndConditions')}</p>
+                                    </div>
+                                    <button
+                                        disabled={submitting}
+                                        onClick={handleSubmitClick}
+                                        className="relative z-10 w-full md:w-auto px-12 py-5 bg-[#6FD6A6] text-[#0B3D2E] font-black text-xl rounded-2xl shadow-xl hover:bg-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                                    >
+                                        {submitting ? <Loader2 className="animate-spin" /> : t('SubmitSecurely')}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </main>
             </div>
-            </div>
-        </>
+
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 20px; }
+            `}</style>
+        </div>
     );
 }

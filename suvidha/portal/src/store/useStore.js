@@ -10,6 +10,12 @@ const useStore = create(
             user: null,
             role: null, // "ADMIN" | "CITIZEN"
 
+            // Admin Auth State
+            adminToken: null,
+            adminRole: null, // "super_admin" | "dept_admin"
+            adminDepartment: null,
+            adminName: null,
+
             // Request Metadata
             requestId: generateUUID(),
 
@@ -26,6 +32,14 @@ const useStore = create(
             setAuth: (token, user) => set({ token, user }),
             setRole: (role) => set({ role }),
             logout: () => set({ token: null, user: null, role: null, requestId: generateUUID() }),
+
+            // Admin Actions
+            setAdminAuth: (adminToken, adminRole, adminDepartment, adminName) => set({ 
+                adminToken, adminRole, adminDepartment, adminName 
+            }),
+            adminLogout: () => set({ 
+                adminToken: null, adminRole: null, adminDepartment: null, adminName: null 
+            }),
 
             setTheme: (theme) => set({ theme }),
             setLanguage: (language) => set({ language }),
@@ -50,7 +64,12 @@ const useStore = create(
                 theme: state.theme,
                 language: state.language,
                 largeFont: state.largeFont,
-                seniorMode: state.seniorMode
+                seniorMode: state.seniorMode,
+                adminToken: state.adminToken,
+                adminRole: state.adminRole,
+                adminDepartment: state.adminDepartment,
+                adminName: state.adminName
+
             }),
         }
     )

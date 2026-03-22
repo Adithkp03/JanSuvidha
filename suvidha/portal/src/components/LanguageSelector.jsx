@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '../store/useStore';
-import { GlobeAltIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { Languages, ChevronDown } from 'lucide-react';
 
 const LANGUAGES = [
     { code: 'en', label: 'English' },
@@ -53,24 +53,24 @@ export default function LanguageSelector() {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors shadow-sm border border-slate-200"
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl border-2 border-gray-100 hover:border-gray-200 bg-gray-50 text-gray-700 font-black text-sm transition-all uppercase tracking-tight"
                 aria-label="Select Language"
             >
-                <GlobeAltIcon className="w-4 h-4 text-primary-600" />
+                <Languages size={18} className="text-gray-500" />
                 <span>{activeLabel}</span>
-                <ChevronDownIcon className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-44 origin-top-right rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none z-50 overflow-hidden border border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="py-1">
                         {LANGUAGES.map((language) => (
                             <button
                                 key={language.code}
                                 onClick={() => handleSelect(language.code)}
-                                className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors ${currentLang === language.code
-                                    ? 'bg-primary-50 text-primary-700'
-                                    : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                                className={`w-full text-left px-5 py-3 text-sm font-bold transition-colors ${currentLang === language.code
+                                    ? 'bg-[#0B3D2E]/5 text-[#0B3D2E]'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                             >
                                 {language.label}

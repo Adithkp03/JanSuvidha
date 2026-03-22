@@ -83,7 +83,7 @@ export default function DepartmentGrid({ onSelect }) {
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-x-8 gap-x-6 gap-y-20 mt-16 pb-20 px-2 lg:px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-x-8 gap-x-6 gap-y-24 mt-16 pb-20 px-4">
             {departments.map((dept) => {
                 let displayName = t(dept.name).replace(/\s+Department$/i, '').replace(/\s+विभाग$/i, '');
 
@@ -99,7 +99,7 @@ export default function DepartmentGrid({ onSelect }) {
                                 className={`w-20 h-20 flex items-center justify-center bg-gradient-to-br ${dept.accentColor} relative overflow-hidden`}
                                 style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
                             >
-                                {/* Geometric overlays to give it that 3D faceted gem look from the mockup */}
+                                {/* 3D Faceted overlays from snippet */}
                                 <div className="absolute inset-0 bg-white/20" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }}></div>
                                 <div className="absolute inset-0 bg-black/10" style={{ clipPath: 'polygon(0% 50%, 50% 50%, 50% 100%, 0% 100%)' }}></div>
                                 {getDeptIcon(dept.icon)}

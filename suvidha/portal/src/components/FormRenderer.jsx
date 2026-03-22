@@ -55,7 +55,7 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
     });
 
     const renderField = (field, hasError) => {
-        const baseClass = `w-full mt-2 rounded-2xl border-2 bg-slate-50/50 px-5 py-4 text-slate-800 text-lg transition-all duration-300 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 ${hasError ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:border-primary-500 focus:ring-primary-500/20 hover:border-slate-300'}`;
+        const baseClass = `w-full mt-2 rounded-2xl border-2 bg-gray-50/50 px-5 py-4 text-[#0B3D2E] text-lg transition-all duration-300 placeholder:text-gray-300 focus:bg-white focus:outline-none focus:ring-4 ${hasError ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:border-[#6FD6A6] focus:ring-[#6FD6A6]/20 hover:border-gray-200'}`;
 
         switch (field.type) {
             case 'textarea':
@@ -85,20 +85,20 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                             <input
                                 type="checkbox"
                                 id={field.name}
-                                {...register(field.name)}
-                                className="w-6 h-6 rounded border-slate-300 text-primary-600 focus:ring-primary-500 focus:ring-4 cursor-pointer"
-                            />
+                                    {...register(field.name)}
+                                    className="w-6 h-6 rounded border-gray-300 text-[#0B3D2E] focus:ring-[#6FD6A6] focus:ring-4 cursor-pointer"
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor={field.name} className="text-base font-bold text-[#0B3D2E] cursor-pointer select-none">
+                                    {t(field.label)} {field.required && <span className="text-red-500 ml-1">*</span>}
+                                </label>
+                                {field.description && (
+                                    <p className="text-sm text-gray-500 mt-1 select-none">{t(field.description)}</p>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <label htmlFor={field.name} className="text-base font-bold text-slate-800 cursor-pointer select-none">
-                                {t(field.label)} {field.required && <span className="text-red-500 ml-1">*</span>}
-                            </label>
-                            {field.description && (
-                                <p className="text-sm text-slate-500 mt-1 select-none">{t(field.description)}</p>
-                            )}
-                        </div>
-                    </div>
-                );
+                    );
             default:
                 return (
                     <input
@@ -127,11 +127,11 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                     return (
                         <div key={field.name} className={field.type === 'textarea' || field.type === 'checkbox' ? 'md:col-span-2' : ''}>
                             {field.type !== 'checkbox' && (
-                                <div className="flex justify-between items-baseline mb-1">
-                                    <label className="block text-sm font-extrabold text-slate-800 uppercase tracking-wide">
+                                <div className="flex justify-between items-baseline mb-2 ml-1">
+                                    <label className="block text-[10px] font-black text-[#0B3D2E]/60 uppercase tracking-widest">
                                         {t(field.label)} {field.required && <span className="text-red-500">*</span>}
                                     </label>
-                                    {field.description && <span className="text-xs text-slate-400 font-medium">{t(field.description)}</span>}
+                                    {field.description && <span className="text-[10px] text-gray-400 font-bold uppercase">{t(field.description)}</span>}
                                 </div>
                             )}
 
@@ -148,17 +148,17 @@ export default function FormRenderer({ schema = [], onSubmit, onBack, defaultVal
                 })}
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-between items-center sm:gap-4 pt-10 mt-8 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 pt-10 mt-8 border-t border-gray-100">
                 <button
                     type="button"
                     onClick={onBack}
-                    className="w-full sm:w-auto mt-4 sm:mt-0 px-8 py-4 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all focus-ring"
+                    className="w-full sm:w-auto px-8 py-4 font-black text-[#0B3D2E]/60 hover:text-[#0B3D2E] hover:bg-gray-50 rounded-2xl transition-all uppercase tracking-widest text-xs"
                 >
                     {t('CancelApplication')}
                 </button>
                 <button
                     type="submit"
-                    className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white font-extrabold text-lg rounded-xl shadow-xl shadow-slate-200 hover:bg-primary-600 hover:shadow-primary-500/30 hover:-translate-y-1 transition-all duration-300 focus-ring flex items-center justify-center gap-2 group"
+                    className="w-full sm:w-auto px-10 py-5 bg-[#0B3D2E] text-white font-black text-lg rounded-2xl shadow-xl hover:bg-[#0F6B4A] transition-all active:scale-95 uppercase tracking-tighter flex items-center justify-center gap-3 group"
                 >
                     {t('SaveAndContinue')}
                     <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>

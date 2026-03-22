@@ -37,29 +37,23 @@ export default function PaymentPage() {
         return () => active = false;
     }, [id]);
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="w-12 h-12 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
-            <p className="mt-4 text-slate-500 font-bold animate-pulse">{t('CheckoutInit')}</p>
-        </div>
-    );
+    // Derive payment info safely (hooks must run unconditionally)
+    const pendingPayment = requestData?.payments?.find(p => p.status === 'pending') || null;
+    const amountInRupees = pendingPayment?.amount_paise ? pendingPayment.amount_paise / 100 : 0;
 
-    if (!requestData) return (
-        <div className="text-center py-20 min-h-[50vh] flex flex-col items-center justify-center">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('CheckoutError')}</h2>
-            <p className="text-slate-500 mb-6">{t('InvalidPaymentReq')}</p>
-            <button onClick={() => navigate('/citizen')} className="text-primary-600 font-bold flex items-center gap-2 hover:underline">
-                <ArrowLeftIcon className="w-4 h-4" /> {t('ReturnHome')}
-            </button>
-        </div>
-    );
+    // Auto read-aloud — must be above all conditional returns
+    useEffect(() => {
+        if (seniorMode && amountInRupees > 0) {
+            speak(`${t('SecurePayment')}. ${t('AmountDue')}: ${amountInRupees} ${t('Rupees')}. Please scan the QR code using any UPI app like G-Pay, PhonePe, Paytm, or BHIM. Or click the Simulate Success button below to proceed.`);
+        }
+    }, [seniorMode, amountInRupees]);
 
-    const pendingPayment = requestData.payments?.find(p => p.status === 'pending');
-
-    if (!pendingPayment) {
-        navigate(`/citizen/receipt/${id}`, { replace: true });
-        return null;
-    }
+    // Redirect if no pending payment (after data loaded)
+    useEffect(() => {
+        if (!loading && requestData && !pendingPayment) {
+            navigate(`/citizen/receipt/${id}`, { replace: true });
+        }
+    }, [loading, requestData, pendingPayment, navigate, id]);
 
     const handlePaymentClick = () => {
         if (seniorMode) {
@@ -70,6 +64,7 @@ export default function PaymentPage() {
     };
 
     const handleUPIPayment = async () => {
+        if (!pendingPayment) return;
         setShowConfirm(false);
         setProcessingPayment(true);
         try {
@@ -88,14 +83,26 @@ export default function PaymentPage() {
         }
     };
 
-    const amountInRupees = pendingPayment.amount_paise / 100;
+    // --- Conditional renders (AFTER all hooks) ---
 
-    // Auto read-aloud on page load
-    useEffect(() => {
-        if (seniorMode && amountInRupees) {
-            speak(`${t('SecurePayment')}. ${t('AmountDue')}: ${amountInRupees} ${t('Rupees')}. Please scan the QR code using any UPI app like G-Pay, PhonePe, Paytm, or BHIM. Or click the Simulate Success button below to proceed.`);
-        }
-    }, [seniorMode, amountInRupees, speak, t]);
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="w-12 h-12 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
+            <p className="mt-4 text-slate-500 font-bold animate-pulse">{t('CheckoutInit')}</p>
+        </div>
+    );
+
+    if (!requestData) return (
+        <div className="text-center py-20 min-h-[50vh] flex flex-col items-center justify-center">
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('CheckoutError')}</h2>
+            <p className="text-slate-500 mb-6">{t('InvalidPaymentReq')}</p>
+            <button onClick={() => navigate('/citizen')} className="text-primary-600 font-bold flex items-center gap-2 hover:underline">
+                <ArrowLeftIcon className="w-4 h-4" /> {t('ReturnHome')}
+            </button>
+        </div>
+    );
+
+    if (!pendingPayment) return null; // redirect useEffect handles this
 
     return (
         <>

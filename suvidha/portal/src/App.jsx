@@ -6,6 +6,7 @@ import { syncQueue } from './utils/offlineSync';
 
 // Layouts
 import Shell from './components/Layout/Shell';
+import AdminShell from './components/Layout/AdminShell';
 
 // Auth
 import LoginForm from './components/Auth/LoginForm';
@@ -18,18 +19,33 @@ import ReceiptPage from './pages/Citizen/ReceiptPage';
 import PaymentPage from './pages/Citizen/PaymentPage';
 import TrackStatus from './pages/Citizen/TrackStatus';
 
-// Admin Pages
-import Dashboard from './pages/Admin/Dashboard';
-import Requests from './pages/Admin/Requests';
-
+// Public Pages
 import MobileUpload from './pages/MobileUpload';
+
+// We must lazy load or import the Admin pages
+// Assuming these files will be created next
+// Super Admin 
+import SuperDashboard from './pages/SuperAdmin/Dashboard';
+import KioskManagement from './pages/SuperAdmin/KioskManagement';
+import EmergencyBroadcast from './pages/SuperAdmin/EmergencyBroadcast';
+import AllRequests from './pages/SuperAdmin/AllRequests';
+import Departments from './pages/SuperAdmin/Departments';
+
+// Dept Admin
+import DeptDashboard from './pages/DeptAdmin/Dashboard';
+import DeptRequests from './pages/DeptAdmin/Requests';
+import DeptSLABreaches from './pages/DeptAdmin/SLABreaches';
+import DeptReports from './pages/DeptAdmin/Reports';
+
 
 const queryClient = new QueryClient();
 
 export default function App() {
-    const { theme, largeFont, token, role, language, seniorMode } = useStore();
-    const navigate = useNavigate();
-
+    const { 
+        theme, largeFont, token, role, language, seniorMode, 
+        adminToken, adminRole, adminDepartment 
+    } = useStore();
+    
     // Apply theme classes to body
     useEffect(() => {
         let baseClass = theme === 'dark' ? 'bg-slate-900 text-white' : 'bg-civic-light text-slate-800';
@@ -66,15 +82,9 @@ export default function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <Routes>
+                {/* Citizen Auth & Root */}
                 <Route path="/" element={
-                    !token ? <LoginForm /> :
-                        role === 'admin' ? <Navigate to="/admin" replace /> :
-                            <Navigate to="/citizen" replace />
-                } />
-
-                {/* Admin Auth */}
-                <Route path="/admin/login" element={
-                    !token ? <AdminLoginForm /> : <Navigate to="/admin" replace />
+                    !token ? <LoginForm /> : <Navigate to="/citizen" replace />
                 } />
 
                 {/* Public Mobile Upload */}
@@ -91,14 +101,42 @@ export default function App() {
                     <Route path="track" element={<TrackStatus />} />
                 </Route>
 
-                {/* Admin Workspace */}
-                <Route path="/admin" element={
-                    token && role === 'admin' ? <Shell workspace="admin" /> : <Navigate to="/admin/login" replace />
+                {/* Admin Auth */}
+                <Route path="/admin/login" element={
+                    !adminToken ? <AdminLoginForm /> : 
+                        (adminRole === 'super_admin' ? <Navigate to="/superadmin" replace /> : <Navigate to="/admin" replace />)
+                } />
+
+                {/* Super Admin Workspace */}
+                <Route path="/superadmin" element={
+                    adminToken && adminRole === 'super_admin' ? (
+                        <AdminShell role="super_admin" />
+                    ) : (
+                        <Navigate to="/admin/login" replace />
+                    )
                 }>
-                    <Route index element={<Dashboard />} />
-                    <Route path="requests" element={<Requests />} />
+                    <Route index element={<SuperDashboard />} />
+                    <Route path="kiosks" element={<KioskManagement />} />
+                    <Route path="broadcast" element={<EmergencyBroadcast />} />
+                    <Route path="requests" element={<AllRequests />} />
+                    <Route path="departments" element={<Departments />} />
                 </Route>
 
+                {/* Dept Admin Workspace */}
+                <Route path="/admin" element={
+                    adminToken && adminRole === 'dept_admin' ? (
+                        <AdminShell role="dept_admin" department={adminDepartment} />
+                    ) : (
+                        <Navigate to="/admin/login" replace />
+                    )
+                }>
+                    <Route index element={<DeptDashboard />} />
+                    <Route path="requests" element={<DeptRequests />} />
+                    <Route path="sla" element={<DeptSLABreaches />} />
+                    <Route path="reports" element={<DeptReports />} />
+                </Route>
+
+                {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </QueryClientProvider>
