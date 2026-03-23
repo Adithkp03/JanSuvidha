@@ -451,9 +451,7 @@ body.senior-mode .group.border-b:hover {
 }
 
 /* Larger headings */
-body.senior-mode h1 { font-size: 2.2rem !important; }
-body.senior-mode h2 { font-size: 1.8rem !important; }
-body.senior-mode h3 { font-size: 1.5rem !important; }
+/* Removed hardcoded h1, h2, h3 sizing to allow Tailwind classes to manage typography scaling */
 
 /* Stepper dots */
 body.senior-mode .w-14.h-14 {

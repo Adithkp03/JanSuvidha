@@ -180,14 +180,6 @@ export default function ReceiptPage({ requestData, isOffline, submissionToken: s
                     >
                         <PrinterIcon className="w-5 h-5" /> Print Receipt
                     </button>
-                    <button
-                        type="button"
-                        onClick={downloadBridgeExport}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-4 font-black text-[#0B3D2E] bg-white/90 hover:bg-white border border-[#0F6B4A]/30 rounded-2xl shadow-lg transition-all text-sm"
-                        title="Download submissions JSON for import on the admin device when the API is offline"
-                    >
-                        Export for admin (JSON)
-                    </button>
                 </div>
             </div>
         </div>

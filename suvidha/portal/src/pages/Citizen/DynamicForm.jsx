@@ -50,25 +50,48 @@ export default function DynamicForm() {
             return;
         }
         if (state?.serviceCode && state?.department) {
+            // Try to pre-fill from the local fallback immediately so the page renders fast
+            const fallback = FALLBACK_SERVICES[state.serviceCode];
+            if (fallback) setServiceData(fallback);
+
             setLoading(true);
             api.get(`/services?department=${state.department}`)
                 .then(resp => {
+                    // Prefer live API data; only if it has the exact service type
                     const svc = (resp.data.services || []).find(s => s.service_type === state.serviceCode);
                     if (svc) setServiceData(svc);
-                    else {
-                        // API returned but service not found — use fallback
-                        const fallback = FALLBACK_SERVICES[state.serviceCode];
-                        if (fallback) setServiceData(fallback);
-                    }
+                    // else keep whatever fallback we already set above
                 })
-                .catch(() => {
-                    // API completely failed — use fallback
-                    const fallback = FALLBACK_SERVICES[state.serviceCode];
-                    if (fallback) setServiceData(fallback);
-                })
+                .catch(() => { /* fallback already set above, nothing to do */ })
                 .finally(() => setLoading(false));
         }
     }, [state?.serviceData, state?.serviceCode, state?.department]);
+
+    // --- HOOKS must come before any early returns (Rules of Hooks) ---
+    const docsRequired = (serviceData?.code === 'elec_bill_pay' || serviceData?.service_type === 'elec_bill_pay')
+        ? []
+        : (serviceData?.required_documents || []);
+    const formSchema = serviceData?.form_schema || [];
+
+    // Auto read-aloud on step change (must be above early returns!)
+    useEffect(() => {
+        if (!seniorMode || !serviceData) return;
+        const labels = { 1: t('FillDetails'), 2: t('UploadDocs'), 3: t('ReviewAndSubmit') };
+        let contentToRead = `${t(serviceData?.name || '')}. Step ${step}: ${labels[step] || ''}. `;
+        
+        if (step === 1 && formSchema.length > 0) {
+            const fields = formSchema.map(f => t(f.label)).join(", ");
+            contentToRead += `Please fill in the following fields: ${fields}.`;
+        } else if (step === 2 && docsRequired.length > 0) {
+            const docs = docsRequired.map(d => d.replace(/_/g, ' ')).join(", ");
+            contentToRead += `Please upload the following required documents: ${docs}.`;
+        } else if (step === 3) {
+            contentToRead += `Please review your application details below and click Submit Securely to proceed.`;
+        }
+        
+        speak(contentToRead);
+    }, [step, seniorMode, serviceData, formSchema, docsRequired, speak, t]);
+    // --- End of unconditional hooks ---
 
     if (!serviceData) {
         if (loading) return (
@@ -88,30 +111,6 @@ export default function DynamicForm() {
             </div>
         );
     }
-
-    const docsRequired = (serviceData.code === 'elec_bill_pay' || serviceData.service_type === 'elec_bill_pay')
-        ? []
-        : (serviceData.required_documents || []);
-    const formSchema = serviceData.form_schema || [];
-
-    // Auto read-aloud on step change
-    useEffect(() => {
-        if (!seniorMode) return;
-        const labels = { 1: t('FillDetails'), 2: t('UploadDocs'), 3: t('ReviewAndSubmit') };
-        let contentToRead = `${t(serviceData?.name || '')}. Step ${step}: ${labels[step] || ''}. `;
-        
-        if (step === 1 && formSchema.length > 0) {
-            const fields = formSchema.map(f => t(f.label)).join(", ");
-            contentToRead += `Please fill in the following fields: ${fields}.`;
-        } else if (step === 2 && docsRequired.length > 0) {
-            const docs = docsRequired.map(d => d.replace(/_/g, ' ')).join(", ");
-            contentToRead += `Please upload the following required documents: ${docs}.`;
-        } else if (step === 3) {
-            contentToRead += `Please review your application details below and click Submit Securely to proceed.`;
-        }
-        
-        speak(contentToRead);
-    }, [step, seniorMode, serviceData, formSchema, docsRequired, speak, t]);
 
     const handleFormSubmit = (data) => {
         setFormData(data);
@@ -336,6 +335,18 @@ export default function DynamicForm() {
 
                 <main className="flex-1 px-6 sm:px-12 py-10 overflow-y-auto custom-scrollbar">
                     
+                    {/* Dynamic Application Title */}
+                    <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+                        <h2 className={`font-black tracking-tight text-[#0B3D2E] mb-3 ${seniorMode ? 'text-4xl sm:text-5xl lg:text-6xl' : 'text-3xl sm:text-4xl'}`}>
+                            {serviceData ? t(serviceData.name) : t('ApplicationForm')}
+                        </h2>
+                        {serviceData?.description && (
+                            <p className={`font-medium text-[#0F6B4A]/80 max-w-2xl mx-auto ${seniorMode ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'}`}>
+                                {t(serviceData.description)}
+                            </p>
+                        )}
+                    </div>
+
                     {/* Premium Stepper */}
                     <div className="mb-16 relative w-full max-w-2xl mx-auto hidden sm:block">
                         <div className="absolute top-1/2 left-0 w-full h-1.5 bg-gray-100 -translate-y-1/2 rounded-full overflow-hidden">

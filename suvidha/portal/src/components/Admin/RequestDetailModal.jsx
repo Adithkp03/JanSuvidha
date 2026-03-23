@@ -11,8 +11,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { AdminServices } from '../../services/adminApi';
 
-export default function RequestDetailModal({ isOpen, onClose, request, onApprove, onReject }) {
-    const [actionState, setActionState] = useState(null); // 'approve' | 'reject' | null
+export default function RequestDetailModal({ isOpen, onClose, request, onApprove, onReject, onInProcess }) {
+    const [actionState, setActionState] = useState(null); // 'approve' | 'reject' | 'in_process' | null
     const [notes, setNotes] = useState('');
     const [docBusyKey, setDocBusyKey] = useState(null);
 
@@ -25,7 +25,7 @@ export default function RequestDetailModal({ isOpen, onClose, request, onApprove
     const extracted = request.extracted_data && typeof request.extracted_data === 'object' ? request.extracted_data : {};
     const extractedEntries = Object.entries(extracted).filter(([k]) => k !== 'submission_token');
 
-    const isPending = ['pending', 'in_review', 'doc_required'].includes(request.status);
+    const isPending = ['pending', 'in_review', 'doc_required', 'submitted'].includes(request.status);
 
     const canTakeAction = isPending;
 
@@ -239,18 +239,24 @@ export default function RequestDetailModal({ isOpen, onClose, request, onApprove
                     )}
 
                     {canTakeAction && !actionState && (
-                        <div className="flex flex-col sm:flex-row items-center gap-4 justify-end">
+                        <div className="flex flex-col md:flex-row items-center gap-3 justify-end">
                             <button 
                                 onClick={() => setActionState('reject')}
-                                className="w-full sm:w-auto px-6 py-3 border border-rose-200 text-rose-600 bg-white hover:bg-rose-50 font-bold rounded-xl transition-all"
+                                className="w-full md:w-auto px-6 py-3 border border-rose-200 text-rose-600 bg-white hover:bg-rose-50 font-bold rounded-xl transition-all"
                             >
-                                Reject Request
+                                Reject
+                            </button>
+                            <button 
+                                onClick={() => setActionState('in_process')}
+                                className="w-full md:w-auto px-6 py-3 border border-amber-200 text-amber-600 bg-white hover:bg-amber-50 font-bold rounded-xl transition-all"
+                            >
+                                Mark In-Process
                             </button>
                             <button 
                                 onClick={() => setActionState('approve')}
-                                className="w-full sm:w-auto px-6 py-3 border border-transparent shadow-[0_4px_10px_rgba(16,185,129,0.3)] text-white bg-emerald-500 hover:bg-emerald-600 font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
+                                className="w-full md:w-auto px-6 py-3 border border-transparent shadow-[0_4px_10px_rgba(16,185,129,0.3)] text-white bg-emerald-500 hover:bg-emerald-600 font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
                             >
-                                <CheckCircleIcon className="w-5 h-5" /> Approve Request
+                                <CheckCircleIcon className="w-5 h-5" /> Approve
                             </button>
                         </div>
                     )}
@@ -281,14 +287,19 @@ export default function RequestDetailModal({ isOpen, onClose, request, onApprove
                                 <button 
                                     onClick={() => {
                                         if (actionState === 'approve') onApprove(request.id, notes);
+                                        else if (actionState === 'in_process') onInProcess?.(request.id, notes);
                                         else onReject(request.id, notes);
                                     }}
                                     className={`px-6 py-2.5 font-bold text-white rounded-xl shadow-md transition-all flex items-center gap-2 ${
-                                        actionState === 'approve' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                                        actionState === 'approve' ? 'bg-emerald-600 hover:bg-emerald-700' : 
+                                        actionState === 'in_process' ? 'bg-amber-500 hover:bg-amber-600' :
+                                        'bg-rose-600 hover:bg-rose-700'
                                     }`}
                                 >
                                     {actionState === 'approve' ? (
                                         <><CheckIcon className="w-5 h-5" /> Confirm Approval</>
+                                    ) : actionState === 'in_process' ? (
+                                        <><CheckIcon className="w-5 h-5" /> Confirm In-Process</>
                                     ) : (
                                         <><XMarkIcon className="w-5 h-5" /> Confirm Rejection</>
                                     )}

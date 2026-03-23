@@ -11,6 +11,7 @@ export default function AIHelper({ onIntentResolved }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [hints, setHints] = useState([]);
+    const { i18n } = useTranslation();
 
     // Local keyword-to-service mapping for offline fallback
     const SERVICE_MAP = [
@@ -83,7 +84,8 @@ export default function AIHelper({ onIntentResolved }) {
         }
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
+        const LANG_MAP = { en:'en-IN', hi:'hi-IN', te:'te-IN', ml:'ml-IN', mr:'mr-IN', ta:'ta-IN', kn:'kn-IN' };
+recognition.lang = LANG_MAP[i18n.language] || 'en-IN';
         recognition.interimResults = false;
 
         recognition.onresult = (event) => {
@@ -101,7 +103,7 @@ export default function AIHelper({ onIntentResolved }) {
             </div>
 
             {/* Title */}
-            <h2 className={`font-black text-[#0B3D2E] tracking-tighter leading-[1.1] mb-10 transition-all duration-500 ${seniorMode ? 'text-5xl sm:text-7xl lg:text-9xl' : 'text-4xl sm:text-6xl lg:text-7xl'}`}>
+            <h2 className={`font-black text-[#0B3D2E] tracking-tighter leading-[1.1] mb-10 transition-all duration-500 ${seniorMode ? 'text-3xl sm:text-5xl lg:text-7xl' : 'text-3xl sm:text-5xl lg:text-6xl'}`}>
                 {t('HowCanWeHelpYou').split('?')[0]} <br/>
                 <span className="text-[#093E2C] font-black">{t('HowCanWeHelpYou').includes('?') ? '?' : ''}</span>
             </h2>
@@ -112,13 +114,13 @@ export default function AIHelper({ onIntentResolved }) {
                 
                 <form 
                     onSubmit={handleAsk}
-                    className="relative flex items-center h-[70px] sm:h-[82px] bg-white border-2 border-gray-100 rounded-3xl sm:rounded-[40px] px-3 sm:px-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] transition-all group-focus-within:border-[#6FD6A6]/50 group-focus-within:shadow-xl"
+                    className={`relative flex items-center bg-white border-2 border-gray-100 px-3 sm:px-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] transition-all group-focus-within:border-[#6FD6A6]/50 group-focus-within:shadow-xl ${seniorMode ? 'h-[90px] sm:h-[100px] rounded-[30px] sm:rounded-[45px]' : 'h-[70px] sm:h-[82px] rounded-3xl sm:rounded-[40px]'}`}
                 >
-                    <Search className="ml-2 sm:ml-4 mr-2 sm:mr-3 text-gray-400 group-focus-within:text-[#0B3D2E]" size={24} />
+                    <Search className={`ml-2 sm:ml-4 mr-2 sm:mr-3 text-gray-400 group-focus-within:text-[#0B3D2E] ${seniorMode ? 'w-10 h-10' : 'w-6 h-6'}`} />
                     <input 
                         type="text" 
                         placeholder={t('AISearchPlaceholder')}
-                        className={`flex-1 bg-transparent outline-none text-[#0B3D2E] font-bold placeholder:text-gray-400 ${seniorMode ? 'text-xl sm:text-3xl placeholder:text-lg sm:placeholder:text-2xl' : 'text-lg sm:text-xl'}`}
+                        className={`flex-1 bg-transparent outline-none text-[#0B3D2E] font-bold placeholder:text-gray-400 ${seniorMode ? 'text-xl sm:text-xl placeholder:text-xl sm:placeholder:text-xl' : 'text-lg sm:text-xl'}`}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                     />
@@ -126,7 +128,7 @@ export default function AIHelper({ onIntentResolved }) {
                     <button 
                         type="button"
                         onClick={startListening}
-                        className="p-2 sm:p-4 text-gray-400 hover:text-[#0B3D2E] transition-colors"
+                        className={`p-2 sm:p-4 text-gray-400 hover:text-[#0B3D2E] transition-colors ${seniorMode ? 'scale-125 mx-1 sm:mx-2' : ''}`}
                         title="Use Voice Input"
                     >
                         <Mic size={22} />
@@ -135,7 +137,7 @@ export default function AIHelper({ onIntentResolved }) {
                     <button 
                         type="submit"
                         disabled={loading || !text.trim()}
-                        className="h-[50px] sm:h-[58px] px-6 sm:px-10 bg-[#0B3D2E] text-white rounded-xl sm:rounded-2xl font-black text-base sm:text-lg hover:bg-[#0F6B4A] transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px] sm:min-w-[140px]"
+                        className={`px-6 sm:px-10 bg-[#0B3D2E] text-white rounded-xl sm:rounded-2xl font-black hover:bg-[#0F6B4A] transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center whitespace-nowrap ${seniorMode ? 'text-xl sm:text-3xl h-[66px] sm:h-[76px] min-w-[120px] sm:min-w-[160px]' : 'text-base sm:text-lg h-[50px] sm:h-[58px] min-w-[100px] sm:min-w-[140px]'}`}
                     >
                         {loading ? <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" /> : t('SearchAI')}
                     </button>
@@ -157,7 +159,7 @@ export default function AIHelper({ onIntentResolved }) {
                             <button 
                                 key={h.service_type} 
                                 onClick={() => onIntentResolved({ service_type: h.service_type, department: h.department })} 
-                                className="px-6 py-2.5 bg-white hover:bg-emerald-50 border border-gray-100 hover:border-emerald-200 rounded-full text-sm font-bold text-[#0B3D2E] shadow-sm transition-all hover:-translate-y-0.5"
+                                className={`px-6 py-2.5 bg-white hover:bg-emerald-50 border border-gray-100 hover:border-emerald-200 rounded-full font-bold text-[#0B3D2E] shadow-sm transition-all hover:-translate-y-0.5 ${seniorMode ? 'text-xl' : 'text-sm'}`}
                             >
                                 {h.label}
                             </button>

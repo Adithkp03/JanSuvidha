@@ -42,6 +42,7 @@ export default function StartFlow() {
     const { t } = useTranslation();
     const [selectedDept, setSelectedDept] = useState(null);
     const [services, setServices] = useState([]);
+    const [availableDepts, setAvailableDepts] = useState([]);
     const [fetchError, setFetchError] = useState(null);
     const [loadingServices, setLoadingServices] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
@@ -53,14 +54,28 @@ export default function StartFlow() {
     const { seniorMode, setSeniorMode, language, user } = useStore();
     const { speak } = useSpeakAloud();
 
-    // Auto read-aloud logic
+    // Auto read-aloud logic for Departments
     useEffect(() => {
         if (seniorMode) {
-            if (!selectedDept) {
-                speak(`${t('HowCanWeHelpYou')} ${t('BrowseDepartments')}. ${t('BrowseDepartmentsDesc')}`);
+            if (!selectedDept && availableDepts.length > 0) {
+                // Read the whole screen content: title, description, and list of departments
+                const intro = `${t('HowCanWeHelpYou')} ${t('BrowseDepartments')}. ${t('BrowseDepartmentsDesc')} `;
+                const deptList = availableDepts.map(d => t(d.name)).join('. ');
+                speak(intro + deptList);
             }
         }
-    }, [seniorMode, selectedDept, speak, t]);
+    }, [seniorMode, selectedDept, availableDepts, speak, t]);
+
+    // Auto read-aloud logic for Services within a Department
+    useEffect(() => {
+        if (seniorMode) {
+            if (selectedDept && services.length > 0) {
+                const intro = `${t(selectedDept.name)}. ${services.length} ${t('Available')}. ${t('SelectCategory')}. `;
+                const serviceList = services.map(s => t(s.name) + ". " + t(s.description)).join('. ');
+                speak(intro + serviceList);
+            }
+        }
+    }, [seniorMode, selectedDept, services, speak, t]);
 
     useEffect(() => {
         if (!selectedDept) {
@@ -193,7 +208,7 @@ export default function StartFlow() {
                                     </div>
                                 </div>
 
-                                <DepartmentGrid onSelect={setSelectedDept} />
+                                <DepartmentGrid onSelect={setSelectedDept} onLoaded={setAvailableDepts} />
                             </section>
 
                         </>

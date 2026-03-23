@@ -15,8 +15,9 @@ const FALLBACK_DEPARTMENTS = [
     { id: 'dept_emergency', code: 'emergency', name: 'Emergency', icon: 'AlertTriangle', description: 'desc_emergency', accentColor: 'from-rose-500 to-rose-600 bg-rose-500', tag: 'tag_priority' },
 ];
 
-export default function DepartmentGrid({ onSelect }) {
+export default function DepartmentGrid({ onSelect, onLoaded }) {
     const { t } = useTranslation();
+    const seniorMode = useStore((s) => s.seniorMode);
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -38,16 +39,20 @@ export default function DepartmentGrid({ onSelect }) {
                     });
                     setDepartments(enrichedDepts);
                     saveOfflineItem('catalog_depts', enrichedDepts);
+                    if (onLoaded) onLoaded(enrichedDepts);
                     setLoading(false);
                 }
             } catch (err) {
                 const cached = await getOfflineItem('catalog_depts');
+                let finalDepts = FALLBACK_DEPARTMENTS;
                 if (active && cached) {
-                    setDepartments(cached);
-                } else if (active) {
-                    setDepartments(FALLBACK_DEPARTMENTS);
+                    finalDepts = cached;
                 }
-                if (active) setLoading(false);
+                if (active) {
+                    setDepartments(finalDepts);
+                    if (onLoaded) onLoaded(finalDepts);
+                    setLoading(false);
+                }
             }
         };
         fetchDepts();
@@ -108,13 +113,13 @@ export default function DepartmentGrid({ onSelect }) {
 
                         {/* Card Content */}
                         <div className="mt-4 flex-1 flex flex-col items-center w-full">
-                            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 mb-4 transition-colors group-hover:text-slate-500">
+                            <span className={`font-black uppercase tracking-[0.25em] text-slate-400 mb-4 transition-colors group-hover:text-slate-500 ${seniorMode ? 'text-sm' : 'text-[10px]'}`}>
                                 {t(dept.tag)}
                             </span>
-                            <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
+                            <h3 className={`font-black text-slate-900 mb-3 tracking-tight ${seniorMode ? 'text-3xl' : 'text-2xl'}`}>
                                 {displayName}
                             </h3>
-                            <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-[90%]">
+                            <p className={`font-medium text-slate-500 leading-relaxed max-w-[90%] ${seniorMode ? 'text-xl' : 'text-sm'}`}>
                                 {t(dept.description)}
                             </p>
                         </div>

@@ -146,6 +146,7 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
 
     const handleAction = (action, id, reason = '') => {
         if (action === 'approve') updateStatusMutation.mutate({ id, status: 'approved', notes: reason });
+        if (action === 'in_review') updateStatusMutation.mutate({ id, status: 'in_review', notes: reason });
         if (action === 'reject') updateStatusMutation.mutate({ id, status: 'rejected', notes: reason });
     };
 
@@ -307,6 +308,7 @@ export default function RequestsTable({ departmentFilter, isSuperAdmin }) {
                     onClose={() => setSelectedRequest(null)}
                     request={selectedRequest}
                     onApprove={(id) => { handleAction('approve', id); setSelectedRequest(null); }}
+                    onInProcess={(id, reason) => { handleAction('in_review', id, reason); setSelectedRequest(null); }}
                     onReject={(id, reason) => { handleAction('reject', id, reason); setSelectedRequest(null); }}
                 />
             )}

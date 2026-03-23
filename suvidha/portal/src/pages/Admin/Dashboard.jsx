@@ -114,6 +114,7 @@ export default function AdminDashboard() {
     // Handlers
     const handleAction = (action, id, reason = '') => {
         if (action === 'approve') updateStatusMutation.mutate({ id, status: 'approved' });
+        if (action === 'in_review') updateStatusMutation.mutate({ id, status: 'in_review', reason });
         if (action === 'reject') updateStatusMutation.mutate({ id, status: 'rejected', reason });
     };
 
@@ -220,6 +221,7 @@ export default function AdminDashboard() {
                 request={selectedRequestNormalized}
                 onApprove={(id) => { handleAction('approve', id); setSelectedRequestId(null); }}
                 onReject={(id, reason) => { handleAction('reject', id, reason); setSelectedRequestId(null); }}
+                onInProcess={(id, reason) => { handleAction('in_review', id, reason); setSelectedRequestId(null); }}
                 onTriggerPayment={(id) => alert(`Triggering payment gateway for ${id}...`)}
             />
 
