@@ -2,4 +2,6 @@
 \i '/docker-entrypoint-initdb.d/migrations/001_core.sql'
 \i '/docker-entrypoint-initdb.d/migrations/002_phase2.sql'
 \i '/docker-entrypoint-initdb.d/migrations/003_suvidha_spec.sql'
+\i '/docker-entrypoint-initdb.d/migrations/004_broadcast_alerts.sql'
+
 

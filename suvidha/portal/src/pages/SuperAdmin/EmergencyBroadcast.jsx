@@ -3,36 +3,26 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import BroadcastForm from '../../components/Admin/BroadcastForm';
 import ToastNotification from '../../components/Admin/ToastNotification';
 import { AdminServices } from '../../services/adminApi';
-import { notifyActiveAlertsChanged } from '../../utils/activeAlertsSync';
-import { readAndPruneActiveAlerts } from '../../utils/activeAlertsStore';
 
 export default function EmergencyBroadcast() {
     const queryClient = useQueryClient();
     const [toast, setToast] = useState(null);
 
-    // Fetch active alerts
+    // Fetch active alerts from the server so all devices stay in sync
     const { data: activeAlerts, isLoading } = useQuery({
         queryKey: ['activeAlerts'],
-        // Same source as citizen kiosks (local prune rules); avoids stale unpruned JSON.parse fallback
-        queryFn: () => readAndPruneActiveAlerts(),
-        refetchInterval: 10000 // poll every 10s to see if others cleared it
+        queryFn: () => AdminServices.getActiveAlerts(),
+        refetchInterval: 5000
     });
 
     const clearMutation = useMutation({
-        mutationFn: async (id) => {
-            try {
-                return await AdminServices.clearAlert(id);
-            } catch {
-                const existing = readAndPruneActiveAlerts();
-                const updated = existing.filter(a => a.id !== id);
-                localStorage.setItem('jan_active_alerts', JSON.stringify(updated));
-                notifyActiveAlertsChanged();
-                return { success: true };
-            }
-        },
+        mutationFn: (id) => AdminServices.clearAlert(id),
         onSuccess: () => {
             queryClient.invalidateQueries(['activeAlerts']);
             setToast({ message: 'Alert cleared successfully', type: 'success' });
+        },
+        onError: () => {
+            setToast({ message: 'Failed to clear alert', type: 'error' });
         }
     });
 

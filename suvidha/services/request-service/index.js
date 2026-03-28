@@ -687,6 +687,85 @@ function normalizePaymentRow(row) {
   };
 }
 
+// ─── Broadcast Alerts ────────────────────────────────────────────────────────
+
+/**
+ * Parse a human-readable duration string like "1 hour" / "4 hours" into ms.
+ * Returns null for "Until manually cleared" or anything unrecognised.
+ */
+function parseDurationMs(duration) {
+  if (!duration || /manually/i.test(String(duration))) return null;
+  const m = String(duration).trim().match(/(\d+)\s*hours?/i);
+  if (m) return parseInt(m[1], 10) * 60 * 60 * 1000;
+  return null;
+}
+
+/** GET /admin/alerts — returns all non-expired alerts */
+app.get("/admin/alerts", async (_req, reply) => {
+  try {
+    const res = await pool.query(
+      `SELECT * FROM broadcast_alerts
+       WHERE expires_at IS NULL OR expires_at > NOW()
+       ORDER BY created_at DESC`
+    );
+    return { alerts: res.rows };
+  } catch (err) {
+    app.log.error({ err }, "Failed to query broadcast_alerts");
+    reply.code(500).send({ error: "db_error", message: "Could not fetch alerts" });
+  }
+});
+
+/** POST /admin/alerts — create a new broadcast alert */
+app.post(
+  "/admin/alerts",
+  {
+    schema: {
+      body: {
+        type: "object",
+        required: ["message"],
+        properties: {
+          type:       { type: "string" },
+          department: { type: "string" },
+          message:    { type: "string" },
+          duration:   { type: "string" },
+        },
+      },
+    },
+  },
+  async (req, reply) => {
+    const { type = "Information", department = "All Departments", message, duration = "1 hour" } = req.body;
+    const durationMs = parseDurationMs(duration);
+    const expiresAt  = durationMs ? new Date(Date.now() + durationMs).toISOString() : null;
+
+    try {
+      const res = await pool.query(
+        `INSERT INTO broadcast_alerts (type, department, message, duration, expires_at)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [type, department, message, duration, expiresAt]
+      );
+      reply.code(201).send(res.rows[0]);
+    } catch (err) {
+      app.log.error({ err }, "Failed to insert broadcast_alert");
+      reply.code(500).send({ error: "db_error", message: "Could not create alert" });
+    }
+  }
+);
+
+/** DELETE /admin/alerts/:id — manually clear an alert */
+app.delete("/admin/alerts/:id", async (req, reply) => {
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM broadcast_alerts WHERE id = $1", [id]);
+    return { success: true };
+  } catch (err) {
+    app.log.error({ err }, "Failed to delete broadcast_alert");
+    reply.code(500).send({ error: "db_error", message: "Could not delete alert" });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.listen({ port: PORT, host: "0.0.0.0" }).catch((err) => {
   app.log.error(err);
   process.exit(1);

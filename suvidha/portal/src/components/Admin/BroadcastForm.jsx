@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { MegaphoneIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { AdminServices } from '../../services/adminApi';
-import { notifyActiveAlertsChanged } from '../../utils/activeAlertsSync';
-import { readAndPruneActiveAlerts } from '../../utils/activeAlertsStore';
 
 const TYPES = ['Information', 'Warning', 'Emergency'];
 const DEPTS = ['All Departments', 'Electricity', 'Gas', 'Water', 'Municipal', 'Waste', 'Public Works'];
@@ -28,17 +26,8 @@ export default function BroadcastForm({ onBroadcastSuccess, setAppToast }) {
                 duration,
                 created_at: new Date().toISOString()
             };
-            
-            // Primary: API call
-            try {
-                await AdminServices.createAlert(payload);
-            } catch (apiErr) {
-                console.warn('API unavailable, falling back to offline storage');
-                const existing = readAndPruneActiveAlerts();
-                const newAlert = { id: Date.now().toString(), ...payload };
-                localStorage.setItem('jan_active_alerts', JSON.stringify([newAlert, ...existing]));
-                notifyActiveAlertsChanged();
-            }
+
+            await AdminServices.createAlert(payload);
 
             setMessage('');
             setAppToast({ message: 'Broadcast transmitted successfully', type: 'success' });

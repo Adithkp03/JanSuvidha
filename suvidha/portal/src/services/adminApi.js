@@ -71,19 +71,44 @@ export const AdminServices = {
         return response.data;
     },
 
-    getActiveAlerts: async () => readAndPruneActiveAlerts(),
+    getActiveAlerts: async () => {
+        try {
+            const response = await adminApi.get('/admin/alerts');
+            const serverAlerts = response.data?.alerts ?? [];
+            // Mirror to localStorage so the sync layer stays consistent
+            localStorage.setItem('jan_active_alerts', JSON.stringify(serverAlerts));
+            notifyActiveAlertsChanged();
+            return serverAlerts;
+        } catch {
+            // Offline fallback: return whatever is cached locally
+            return readAndPruneActiveAlerts();
+        }
+    },
 
     createAlert: async (alertData) => {
-        const existing = readAndPruneActiveAlerts();
-        const newAlert = { id: Date.now().toString(), ...alertData };
-        localStorage.setItem('jan_active_alerts', JSON.stringify([newAlert, ...existing]));
-        notifyActiveAlertsChanged();
-        return newAlert;
+        try {
+            const response = await adminApi.post('/admin/alerts', alertData);
+            return response.data;
+        } catch {
+            // Offline fallback: store locally only
+            console.warn('Alerts API unavailable, storing offline');
+            const existing = readAndPruneActiveAlerts();
+            const newAlert = { id: Date.now().toString(), ...alertData };
+            localStorage.setItem('jan_active_alerts', JSON.stringify([newAlert, ...existing]));
+            notifyActiveAlertsChanged();
+            return newAlert;
+        }
     },
 
     clearAlert: async (id) => {
+        try {
+            await adminApi.delete(`/admin/alerts/${id}`);
+        } catch {
+            // Offline fallback: remove from local cache only
+            console.warn('Alerts API unavailable, clearing locally');
+        }
         const existing = readAndPruneActiveAlerts();
-        const updated = existing.filter((a) => a.id !== id);
+        const updated = existing.filter((a) => String(a.id) !== String(id));
         localStorage.setItem('jan_active_alerts', JSON.stringify(updated));
         notifyActiveAlertsChanged();
         return { success: true };
